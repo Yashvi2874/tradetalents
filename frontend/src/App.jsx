@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import './App.css'
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 // Import page components (to be created)
 import Home from './pages/Home'
@@ -19,6 +21,18 @@ import Messages from './pages/Messages'
 import Calendar from './pages/Calendar'
 
 function App() {
+  useEffect(() => {
+    // Initialize AOS animations
+    AOS.init({
+      duration: 1000,
+      once: true,
+      mirror: false
+    });
+    
+    // Refresh AOS on route changes
+    AOS.refresh();
+  }, []);
+
   return (
     <div className="App">
       <Header />

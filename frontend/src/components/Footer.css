@@ -1,6 +1,6 @@
 .footer {
-  background-color: #1e293b;
-  color: white;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
   padding: 2rem 1rem;
 }
 
@@ -33,7 +33,7 @@
 }
 
 .footer-description {
-  color: #cbd5e1;
+  color: var(--text-secondary);
   margin-bottom: 1.5rem;
   line-height: 1.6;
   font-size: 0.9rem;
@@ -45,7 +45,7 @@
 }
 
 .social-link {
-  color: #94a3b8;
+  color: var(--text-tertiary);
   text-decoration: none;
   transition: color 0.3s;
   font-size: 0.9rem;
@@ -72,14 +72,14 @@
 }
 
 .footer-links a {
-  color: #cbd5e1;
+  color: var(--text-secondary);
   text-decoration: none;
   transition: color 0.3s;
   font-size: 0.95rem;
 }
 
 .footer-links a:hover {
-  color: #fbbf24;
+  color: var(--accent-secondary);
   text-decoration: underline;
 }
 

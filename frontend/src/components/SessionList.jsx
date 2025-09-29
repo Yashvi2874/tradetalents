@@ -2,29 +2,18 @@ import React from 'react';
 import SessionItem from './SessionItem';
 import './SessionList.css';
 
-const SessionList = ({ sessions, title, onAction }) => {
-  if (!sessions || sessions.length === 0) {
-    return (
-      <div className="session-list">
-        <h2 className="session-list-title">{title}</h2>
-        <div className="no-sessions">
-          <p>No sessions available at the moment.</p>
-        </div>
-      </div>
-    );
-  }
-
+const SessionList = ({ sessions, title }) => {
   return (
-    <div className="session-list">
-      <h2 className="session-list-title">{title}</h2>
-      <div className="sessions">
-        {sessions.map(session => (
-          <SessionItem 
-            key={session.id} 
-            session={session} 
-            onAction={onAction}
-          />
-        ))}
+    <div className="session-list card glass">
+      <h2 className="section-title">{title}</h2>
+      <div className="session-items">
+        {sessions && sessions.length > 0 ? (
+          sessions.map(session => (
+            <SessionItem key={session.id} session={session} />
+          ))
+        ) : (
+          <p className="no-sessions">No sessions found</p>
+        )}
       </div>
     </div>
   );

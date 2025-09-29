@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import './Calendar.css';
 
 const Calendar = () => {
@@ -380,14 +381,17 @@ const Calendar = () => {
       const hasSessions = getSessionsForDate(date).length > 0;
 
       days.push(
-        <div
+        <motion.div
           key={day}
           className={`calendar-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''} ${hasSessions ? 'has-sessions' : ''}`}
           onClick={() => handleDateClick(day)}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: "spring", stiffness: 400, damping: 10 }}
         >
           <span className="day-number">{day}</span>
           {hasSessions && <div className="session-indicator"></div>}
-        </div>
+        </motion.div>
       );
     }
 
@@ -404,23 +408,43 @@ const Calendar = () => {
   };
 
   return (
-    <div className="calendar-container">
-      <div className="calendar-section">
+    <div className="calendar-container gradient-bg">
+      <motion.div 
+        className="calendar-section card glass"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
+      >
         <div className="calendar-header">
           <div className="calendar-nav">
-            <button onClick={() => navigateMonth(-1)} className="nav-btn">
+            <motion.button 
+              onClick={() => navigateMonth(-1)} 
+              className="nav-btn"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
               &#8249;
-            </button>
+            </motion.button>
             <h2 className="calendar-title">
               {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
             </h2>
-            <button onClick={() => navigateMonth(1)} className="nav-btn">
+            <motion.button 
+              onClick={() => navigateMonth(1)} 
+              className="nav-btn"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
               &#8250;
-            </button>
+            </motion.button>
           </div>
-          <button onClick={navigateToToday} className="today-btn">
+          <motion.button 
+            onClick={navigateToToday} 
+            className="today-btn"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
             Today
-          </button>
+          </motion.button>
         </div>
 
         <div className="calendar-grid">
@@ -435,9 +459,14 @@ const Calendar = () => {
             {renderCalendarDays()}
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="sessions-section">
+      <motion.div 
+        className="sessions-section card glass"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
         <div className="sessions-header">
           <h3 className="sessions-title">
             Sessions for {formatSelectedDate()}
@@ -446,8 +475,15 @@ const Calendar = () => {
         
         <div className="sessions-list">
           {getSelectedDateSessions().length > 0 ? (
-            getSelectedDateSessions().map(session => (
-              <div key={session.id} className="session-card">
+            getSelectedDateSessions().map((session, index) => (
+              <motion.div 
+                key={session.id} 
+                className="session-card"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * index, duration: 0.5 }}
+                whileHover={{ y: -5, boxShadow: '0 10px 25px rgba(0, 0, 0, 0.3)' }}
+              >
                 <div className="session-header">
                   <h4 className="session-title">{session.title}</h4>
                   <div className="session-price">{session.price} credits</div>
@@ -467,11 +503,15 @@ const Calendar = () => {
                   {session.description}
                 </div>
                 <div className="session-actions">
-                  <button className="btn primary">
+                  <motion.button 
+                    className="btn primary"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
                     Book Session
-                  </button>
+                  </motion.button>
                 </div>
-              </div>
+              </motion.div>
             ))
           ) : (
             <div className="no-sessions">
@@ -481,7 +521,7 @@ const Calendar = () => {
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

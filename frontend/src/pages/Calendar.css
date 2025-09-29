@@ -1,7 +1,7 @@
 .calendar-container {
   display: flex;
   min-height: 100vh;
-  background-color: #f8fafc;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
   gap: 2rem;
   padding: 2rem;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -11,10 +11,22 @@
 .calendar-section {
   flex: 1;
   max-width: 800px;
-  background: white;
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.1);
   border-radius: 1rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   padding: 2rem;
+  backdrop-filter: blur(10px);
+}
+
+.calendar-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
 }
 
 .calendar-header {
@@ -34,7 +46,7 @@
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: #64748b;
+  color: #94a3b8;
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 0.5rem;
@@ -47,53 +59,55 @@
 }
 
 .nav-btn:hover {
-  background-color: #f1f5f9;
-  color: #2563eb;
+  background-color: rgba(15, 23, 42, 0.5);
+  color: #60a5fa;
 }
 
 .calendar-title {
   font-size: 1.75rem;
-  color: #1e293b;
+  color: #f1f5f9;
   font-weight: 600;
   margin: 0;
 }
 
 .today-btn {
-  background-color: #2563eb;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
 }
 
 .today-btn:hover {
-  background-color: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(59, 130, 246, 0.4);
 }
 
 .calendar-grid {
   border-radius: 0.75rem;
   overflow: hidden;
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgba(148, 163, 184, 0.2);
 }
 
 .calendar-header-row {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  background-color: #f8fafc;
+  background-color: rgba(15, 23, 42, 0.5);
 }
 
 .calendar-header-cell {
   padding: 1rem;
   text-align: center;
   font-weight: 600;
-  color: #64748b;
+  color: #94a3b8;
   font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-right: 1px solid #e2e8f0;
+  border-right: 1px solid rgba(148, 163, 184, 0.2);
 }
 
 .calendar-header-cell:last-child {
@@ -108,15 +122,16 @@
 .calendar-day {
   position: relative;
   height: 80px;
-  border-right: 1px solid #e2e8f0;
-  border-bottom: 1px solid #e2e8f0;
+  border-right: 1px solid rgba(148, 163, 184, 0.2);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   padding: 0.5rem 0.25rem;
+  background: rgba(15, 23, 42, 0.3);
 }
 
 .calendar-day:nth-child(7n) {
@@ -124,20 +139,21 @@
 }
 
 .calendar-day:hover:not(.empty) {
-  background-color: #f1f5f9;
+  background-color: rgba(30, 41, 59, 0.7);
 }
 
 .calendar-day.empty {
   cursor: default;
-  background-color: #f8fafc;
+  background-color: rgba(15, 23, 42, 0.1);
 }
 
 .calendar-day.today {
-  background-color: #dbeafe;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+  border: 1px solid rgba(96, 165, 250, 0.3);
 }
 
 .calendar-day.selected {
-  background-color: #2563eb;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
   color: white;
 }
 
@@ -164,7 +180,7 @@
 .session-indicator {
   width: 4px;
   height: 4px;
-  background-color: #2563eb;
+  background-color: #3b82f6;
   border-radius: 50%;
   margin-top: 2px;
 }
@@ -176,23 +192,35 @@
 /* Sessions Section */
 .sessions-section {
   width: 400px;
-  background: white;
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.1);
   border-radius: 1rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   padding: 2rem;
   height: fit-content;
   max-height: calc(100vh - 4rem);
   overflow-y: auto;
+  backdrop-filter: blur(10px);
+}
+
+.sessions-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
 }
 
 .sessions-header {
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
 }
 
 .sessions-title {
-  color: #1e293b;
+  color: #f1f5f9;
   font-size: 1.25rem;
   font-weight: 600;
   margin: 0;
@@ -206,16 +234,29 @@
 
 /* Session Card Styles */
 .session-card {
-  background-color: #f8fafc;
+  background-color: rgba(15, 23, 42, 0.5);
   border-radius: 0.75rem;
   padding: 1.5rem;
-  border: 1px solid #e2e8f0;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.session-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
 }
 
 .session-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  border-color: rgba(96, 165, 250, 0.3);
 }
 
 .session-header {
@@ -227,7 +268,7 @@
 
 .session-title {
   font-size: 1.125rem;
-  color: #1e293b;
+  color: #f1f5f9;
   margin: 0;
   font-weight: 600;
   flex: 1;
@@ -235,7 +276,7 @@
 }
 
 .session-price {
-  background-color: #2563eb;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
   color: white;
   padding: 0.25rem 0.75rem;
   border-radius: 1rem;
@@ -255,12 +296,12 @@
 
 .session-detail .label {
   font-weight: 600;
-  color: #64748b;
+  color: #94a3b8;
   margin-right: 0.5rem;
 }
 
 .session-description {
-  color: #64748b;
+  color: #94a3b8;
   font-size: 0.875rem;
   line-height: 1.5;
   margin-bottom: 1.5rem;
@@ -279,23 +320,41 @@
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 0.875rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: 0.5s;
+}
+
+.btn:hover::before {
+  left: 100%;
 }
 
 .btn.primary {
-  background-color: #2563eb;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
   color: white;
+  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
 }
 
 .btn.primary:hover {
-  background-color: #1d4ed8;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(59, 130, 246, 0.4);
 }
 
 /* No Sessions State */
 .no-sessions {
   text-align: center;
   padding: 3rem 1rem;
-  color: #64748b;
+  color: #94a3b8;
 }
 
 .no-sessions-icon {

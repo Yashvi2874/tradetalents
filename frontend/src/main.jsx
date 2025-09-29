@@ -1,19 +1,30 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import React from 'react'
+import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
-import { AuthProvider } from './contexts/AuthContext.jsx'
-import { NotificationProvider } from './contexts/NotificationContext.jsx'
+import { AuthProvider } from './contexts/AuthContext'
+import App from './App'
 import './index.css'
-import App from './App.jsx'
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
+// Initialize AOS animations
+import AOS from 'aos'
+import 'aos/dist/aos.css'
+
+AOS.init({
+  duration: 1000,
+  once: true,
+  mirror: false
+})
+
+import { ThemeProvider } from './contexts/ThemeContext'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
     <BrowserRouter>
-      <NotificationProvider>
+      <ThemeProvider>
         <AuthProvider>
           <App />
         </AuthProvider>
-      </NotificationProvider>
+      </ThemeProvider>
     </BrowserRouter>
-  </StrictMode>,
+  </React.StrictMode>,
 )

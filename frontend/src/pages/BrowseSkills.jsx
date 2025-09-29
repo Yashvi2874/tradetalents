@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { motion } from 'framer-motion';
 import './BrowseSkills.css';
 
 const BrowseSkills = () => {
@@ -7,10 +8,6 @@ const BrowseSkills = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('popular');
-  const [showCalendar, setShowCalendar] = useState(null); // Track which skill's calendar is open
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedTime, setSelectedTime] = useState(null);
-  const [bookings, setBookings] = useState([]); // Temporary storage for bookings
 
   // Mock skills data
   const skills = [
@@ -107,95 +104,15 @@ const BrowseSkills = () => {
       return 0;
     });
 
-  // Handle category selection without page scroll
-  const handleCategorySelect = (category) => {
-    setSelectedCategory(category);
-    // Prevent default behavior that might cause scrolling
-    return false;
-  };
-
-  // Open calendar for a specific skill
-  const openCalendar = (skillId) => {
-    setShowCalendar(skillId);
-    setSelectedDate(null);
-    setSelectedTime(null);
-  };
-
-  // Close calendar
-  const closeCalendar = () => {
-    setShowCalendar(null);
-    setSelectedDate(null);
-    setSelectedTime(null);
-  };
-
-  // Handle date selection
-  const handleDateSelect = (date) => {
-    setSelectedDate(date);
-  };
-
-  // Handle time selection
-  const handleTimeSelect = (time) => {
-    setSelectedTime(time);
-  };
-
-  // Confirm booking
-  const confirmBooking = (skill) => {
-    if (selectedDate && selectedTime) {
-      const newBooking = {
-        id: Date.now(), // Unique ID based on timestamp
-        skillId: skill.id,
-        skillName: skill.name,
-        tutor: skill.tutor,
-        date: selectedDate,
-        time: selectedTime,
-        price: skill.price,
-        bookingDate: new Date().toISOString()
-      };
-      
-      setBookings([...bookings, newBooking]);
-      closeCalendar();
-      alert(`Successfully booked ${skill.name} with ${skill.tutor} on ${selectedDate} at ${selectedTime}`);
-    } else {
-      alert('Please select both date and time');
-    }
-  };
-
-  // Generate next 7 days for booking
-  const generateNext7Days = () => {
-    const days = [];
-    for (let i = 1; i <= 7; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() + i);
-      days.push(date);
-    }
-    return days;
-  };
-
-  // Generate time slots
-  const generateTimeSlots = () => {
-    const slots = [];
-    for (let hour = 9; hour <= 17; hour++) {
-      slots.push(`${hour}:00`);
-      if (hour !== 17) { // Don't add 17:30 as it would be 18:00
-        slots.push(`${hour}:30`);
-      }
-    }
-    return slots;
-  };
-
-  // Format date for display
-  const formatDate = (date) => {
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      month: 'short', 
-      day: 'numeric' 
-    });
-  };
-
   return (
-    <div className="browse-skills">
+    <div className="browse-skills gradient-bg">
       <div className="browse-skills-container">
-        <div className="browse-skills-header">
+        <motion.div 
+          className="browse-skills-header"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           <h1>Browse Skills</h1>
           <div className="user-info">
             <span className="welcome-text">Welcome back, {user?.name || 'User'}!</span>
@@ -203,9 +120,14 @@ const BrowseSkills = () => {
               <span>{user?.credits || 0} Credits</span>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="browse-filters">
+        <motion.div 
+          className="browse-filters"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+        >
           <div className="search-filter">
             <input
               type="text"
@@ -219,7 +141,7 @@ const BrowseSkills = () => {
           <div className="category-filter">
             <select 
               value={selectedCategory} 
-              onChange={(e) => handleCategorySelect(e.target.value)}
+              onChange={(e) => setSelectedCategory(e.target.value)}
               className="category-select"
             >
               {categories.map(category => (
@@ -242,12 +164,24 @@ const BrowseSkills = () => {
               <option value="price-high">Price: High to Low</option>
             </select>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="skills-grid">
+        <motion.div 
+          className="skills-grid"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+        >
           {filteredSkills.length > 0 ? (
-            filteredSkills.map(skill => (
-              <div key={skill.id} className="skill-card">
+            filteredSkills.map((skill, index) => (
+              <motion.div
+                key={skill.id}
+                className="skill-card card glass"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * index, duration: 0.5 }}
+                whileHover={{ y: -10, boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)' }}
+              >
                 <div className="skill-header">
                   <h3 className="skill-name">{skill.name}</h3>
                   <div className="skill-price">{skill.price} credits</div>
@@ -282,72 +216,9 @@ const BrowseSkills = () => {
                 
                 <div className="skill-actions">
                   <button className="btn btn-secondary">View Details</button>
-                  <button className="btn btn-primary" onClick={() => openCalendar(skill.id)}>
-                    Book Session
-                  </button>
+                  <button className="btn btn-primary">Book Session</button>
                 </div>
-
-                {/* Calendar Modal */}
-                {showCalendar === skill.id && (
-                  <div className="calendar-modal">
-                    <div className="calendar-overlay" onClick={closeCalendar}></div>
-                    <div className="calendar-content">
-                      <div className="calendar-header">
-                        <h3>Book Session: {skill.name}</h3>
-                        <button className="close-btn" onClick={closeCalendar}>×</button>
-                      </div>
-                      
-                      <div className="calendar-body">
-                        <div className="date-selection">
-                          <h4>Select Date</h4>
-                          <div className="date-grid">
-                            {generateNext7Days().map((date, index) => (
-                              <button
-                                key={index}
-                                className={`date-btn ${selectedDate && selectedDate.toDateString() === date.toDateString() ? 'selected' : ''}`}
-                                onClick={() => handleDateSelect(date)}
-                              >
-                                {formatDate(date)}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                        
-                        {selectedDate && (
-                          <div className="time-selection">
-                            <h4>Select Time</h4>
-                            <div className="time-grid">
-                              {generateTimeSlots().map(time => (
-                                <button
-                                  key={time}
-                                  className={`time-btn ${selectedTime === time ? 'selected' : ''}`}
-                                  onClick={() => handleTimeSelect(time)}
-                                >
-                                  {time}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {selectedDate && selectedTime && (
-                          <div className="booking-summary">
-                            <h4>Booking Summary</h4>
-                            <p><strong>Skill:</strong> {skill.name}</p>
-                            <p><strong>Tutor:</strong> {skill.tutor}</p>
-                            <p><strong>Date:</strong> {selectedDate.toDateString()}</p>
-                            <p><strong>Time:</strong> {selectedTime}</p>
-                            <p><strong>Price:</strong> {skill.price} credits</p>
-                            <button className="btn btn-primary" onClick={() => confirmBooking(skill)}>
-                              Confirm Booking
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+              </motion.div>
             ))
           ) : (
             <div className="no-results">
@@ -355,7 +226,7 @@ const BrowseSkills = () => {
               <p>Try adjusting your search or filter criteria</p>
             </div>
           )}
-        </div>
+        </motion.div>
       </div>
     </div>
   );

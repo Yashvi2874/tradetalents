@@ -26,16 +26,21 @@ const HowItWorks = () => {
   ];
 
   return (
-    <section className="how-it-works">
+    <section className="how-it-works" data-aos="fade-up">
       <div className="container">
-        <div className="section-header">
+        <div className="section-header" data-aos="fade-up" data-aos-delay="50">
           <h2 className="section-title">How It Works</h2>
           <p className="section-subtitle">Start your peer-learning journey in just a few simple steps</p>
         </div>
         <div className="steps-container">
           <div className="steps">
             {steps.map((step, index) => (
-              <div key={index} className="step">
+              <div
+                key={index}
+                className="step"
+                data-aos="flip-up"
+                data-aos-delay={String(100 * (index + 1))}
+              >
                 <div className="step-number">
                   <span>{step.number}</span>
                 </div>

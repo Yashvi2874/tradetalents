@@ -1,49 +1,75 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import './SessionItem.css';
 
-const SessionItem = ({ session, onAction }) => {
+const SessionItem = ({ session }) => {
   const handleAction = () => {
-    if (onAction) {
-      onAction(session);
+    console.log('Session action:', session);
+    // Action logic would go here
+  };
+
+  const getActionText = () => {
+    switch(session.type) {
+      case 'upcoming': return 'Join Session';
+      case 'past': return 'View Certificate';
+      default: return 'View Details';
+    }
+  };
+
+  const getStatusClass = () => {
+    switch(session.type) {
+      case 'upcoming': return 'status-upcoming';
+      case 'past': return 'status-past';
+      default: return '';
     }
   };
 
   return (
-    <div className="session-item">
+    <motion.div 
+      className="session-item card glass"
+      whileHover={{ scale: 1.02 }}
+      transition={{ type: "spring", stiffness: 400, damping: 10 }}
+    >
       <div className="session-header">
-        <h3 className="session-title">{session.title}</h3>
-        <div className="session-price">{session.price} credits</div>
+        <div className="session-info">
+          <h3 className="session-title">{session.title}</h3>
+          <p className="session-tutor">with {session.tutor}</p>
+        </div>
+        <div className={`session-status ${getStatusClass()}`}>
+          {session.type}
+        </div>
       </div>
+      
       <div className="session-details">
-        <div className="session-info">
-          <span className="info-label">Tutor</span>
-          <span className="info-value">{session.tutor}</span>
+        <div className="detail-item">
+          <span className="detail-label">📅 Date:</span>
+          <span className="detail-value">{session.date}</span>
         </div>
-        <div className="session-info">
-          <span className="info-label">Date</span>
-          <span className="info-value">{session.date}</span>
+        <div className="detail-item">
+          <span className="detail-label">🕐 Time:</span>
+          <span className="detail-value">{session.time}</span>
         </div>
-        <div className="session-info">
-          <span className="info-label">Time</span>
-          <span className="info-value">{session.time}</span>
+        <div className="detail-item">
+          <span className="detail-label">⏱️ Duration:</span>
+          <span className="detail-value">{session.duration}</span>
         </div>
-        <div className="session-info">
-          <span className="info-label">Duration</span>
-          <span className="info-value">{session.duration}</span>
+        <div className="detail-item">
+          <span className="detail-label">💎 Price:</span>
+          <span className="detail-value">{session.price} credits</span>
         </div>
       </div>
-      <div className="session-description">
-        {session.description}
-      </div>
+      
+      <p className="session-description">{session.description}</p>
+      
       <div className="session-actions">
         <button 
-          className={`btn ${session.type === 'upcoming' ? 'btn-primary' : 'btn-secondary'}`}
+          className={`btn ${session.type === 'upcoming' ? 'primary' : 'secondary'}`}
           onClick={handleAction}
         >
-          {session.type === 'upcoming' ? 'Join Session' : 'Book Session'}
+          {getActionText()}
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

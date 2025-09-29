@@ -26,15 +26,20 @@ const FeaturesSection = () => {
   ];
 
   return (
-    <section className="features-section">
+    <section className="features-section" data-aos="fade-up">
       <div className="container">
-        <div className="section-header">
+        <div className="section-header" data-aos="fade-up" data-aos-delay="50">
           <h2 className="section-title">Why Choose Trade Talents?</h2>
           <p className="section-subtitle">A better way to learn and share knowledge with your university community</p>
         </div>
         <div className="features-grid">
           {features.map((feature, index) => (
-            <div key={index} className="feature-card">
+            <div
+              key={index}
+              className="feature-card"
+              data-aos="zoom-in"
+              data-aos-delay={String(100 * (index + 1))}
+            >
               <div className="feature-icon">
                 <span className="icon">{feature.icon}</span>
               </div>
