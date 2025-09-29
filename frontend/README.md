@@ -1,6 +1,8 @@
-# Trade Talents Frontend
+# TradeTalents Frontend
 
 A web-based peer-learning platform designed exclusively for verified university students to teach and learn practical skills from one another.
+
+This is the frontend application for the TradeTalents platform, built with React and Vite. It connects to the backend API to provide a complete skill exchange experience.
 
 ## Features
 
@@ -85,6 +87,8 @@ Create a `.env` file in the root directory with the following variables:
 ```
 VITE_API_URL=http://localhost:5000/api
 ```
+
+For production, update `VITE_API_URL` to point to your deployed backend API.
 
 ## Learn More
 
