@@ -32,6 +32,7 @@ const Header = () => {
                 <li><Link to="/browse" className="nav-link">Browse Skills</Link></li>
                 <li><Link to="/credits" className="nav-link">Buy Credits</Link></li>
                 <li><Link to="/messages" className="nav-link">Messages</Link></li>
+                <li><Link to="/calendar" className="nav-link">Calendar</Link></li>
                 <li className="user-menu">
                   <span className="user-name">{user.name}</span>
                   <button onClick={handleLogout} className="btn-logout">Logout</button>

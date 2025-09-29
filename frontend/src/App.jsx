@@ -16,6 +16,7 @@ import Skills from './pages/Skills'
 import Credits from './pages/Credits'
 import BrowseSkills from './pages/BrowseSkills'
 import Messages from './pages/Messages'
+import Calendar from './pages/Calendar'
 
 function App() {
   return (
@@ -59,6 +60,11 @@ function App() {
           <Route path="/messages" element={
             <ProtectedRoute>
               <Messages />
+            </ProtectedRoute>
+          } />
+          <Route path="/calendar" element={
+            <ProtectedRoute>
+              <Calendar />
             </ProtectedRoute>
           } />
         </Routes>
