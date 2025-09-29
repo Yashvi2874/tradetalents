@@ -77,8 +77,8 @@
 }
 
 .user-name {
-  font-weight: 500;
-  color: #334155;
+  font-weight: 800;
+  color: #1d4ed8;
 }
 
 .btn-logout {
@@ -95,6 +95,14 @@
 .btn-logout:hover {
   color: #dc2626;
   background-color: rgba(239, 68, 68, 0.1);
+}
+
+.highlight-username {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-weight: 600;
 }
 
 @media (max-width: 768px) {
