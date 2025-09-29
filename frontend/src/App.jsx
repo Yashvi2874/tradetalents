@@ -1,28 +1,69 @@
+import { useState } from 'react'
+import { Routes, Route } from 'react-router-dom'
+import ProtectedRoute from './components/ProtectedRoute'
+import Header from './components/Header'
+import Footer from './components/Footer'
 import './App.css'
+
+// Import page components (to be created)
+import Home from './pages/Home'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import Dashboard from './pages/Dashboard'
+import Profile from './pages/Profile'
+import Sessions from './pages/Sessions'
+import Skills from './pages/Skills'
+import Credits from './pages/Credits'
+import BrowseSkills from './pages/BrowseSkills'
+import Messages from './pages/Messages'
 
 function App() {
   return (
-    <div className="min-h-screen bg-background text-text">
-      <header className="bg-surface shadow-sm py-6">
-        <div className="container mx-auto px-4">
-          <h1 className="text-3xl font-bold text-center text-primary">
-            Tradetalents Platform
-          </h1>
-        </div>
-      </header>
-      
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl font-semibold mb-4">Welcome to Our Professional Platform</h2>
-          <p className="text-text-secondary mb-6">
-            This is a clean, professional starting point for your application.
-          </p>
-          <div className="bg-surface rounded-lg shadow-sm p-6 border border-border">
-            <p className="mb-4">Your content will appear here.</p>
-            <p>Start building your professional application with Tailwind CSS.</p>
-          </div>
-        </div>
+    <div className="App">
+      <Header />
+      <main>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/dashboard/sessions" element={
+            <ProtectedRoute>
+              <Sessions />
+            </ProtectedRoute>
+          } />
+          <Route path="/dashboard/skills" element={
+            <ProtectedRoute>
+              <Skills />
+            </ProtectedRoute>
+          } />
+          <Route path="/dashboard/profile" element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } />
+          <Route path="/browse" element={
+            <ProtectedRoute>
+              <BrowseSkills />
+            </ProtectedRoute>
+          } />
+          <Route path="/credits" element={
+            <ProtectedRoute>
+              <Credits />
+            </ProtectedRoute>
+          } />
+          <Route path="/messages" element={
+            <ProtectedRoute>
+              <Messages />
+            </ProtectedRoute>
+          } />
+        </Routes>
       </main>
+      <Footer />
     </div>
   )
 }

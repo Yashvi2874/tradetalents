@@ -1,0 +1,30 @@
+.session-list {
+  margin: 1.5rem 0;
+}
+
+.session-list-title {
+  font-size: 1.25rem;
+  color: #111827;
+  margin-bottom: 1.25rem;
+  font-weight: 600;
+}
+
+.sessions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
+}
+
+.no-sessions {
+  background-color: #f9fafb;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+}
+
+.no-sessions p {
+  color: #6b7280;
+  margin: 0;
+  font-size: 1rem;
+}

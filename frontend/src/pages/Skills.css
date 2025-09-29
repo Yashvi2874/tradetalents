@@ -1,0 +1,34 @@
+.skills-page {
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+.skills-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.skills-content {
+  margin-top: 2rem;
+}
+
+.skills-header {
+  margin-bottom: 2rem;
+}
+
+.skills-header h1 {
+  font-size: 1.5rem;
+  color: #1e293b;
+  margin: 0;
+}
+
+.search-section {
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .skills-container {
+    padding: 1rem;
+  }
+}
