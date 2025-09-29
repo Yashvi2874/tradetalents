@@ -1,120 +1,232 @@
-# TradeTalents
+<div align="left">
 
-TradeTalents is a skill exchange platform built with the MERN stack (MongoDB, Express.js, React, Node.js). This platform allows users to share their skills, learn from others, and participate in skill-based sessions.
+# TradeTalents 🚀
 
-## Project Structure
+</div>
 
-```
-TradeTalents/
-├── backend/     # Node.js/Express backend API
-└── frontend/    # React frontend application
-```
+<p align="left">
+  <img src="https://img.shields.io/badge/MERN-Stack-blue?style=for-the-badge&logo=javascript" alt="MERN Stack">
+</p>
 
-## Features
+<p align="left">
+  A skill exchange platform built with the MERN stack (MongoDB, Express.js, React, Node.js). This platform allows users to share their skills, learn from others, and participate in skill-based sessions.
+</p>
 
-### User Management
-- User registration and authentication
-- Profile management
+---
+
+## 🌟 Features
+
+### 🔐 User Management
+- Secure user registration and authentication
+- Comprehensive profile management
 - Credit system for transactions
 
-### Skill Exchange
+### 💡 Skill Exchange
 - Browse and search skills by category
 - Create and manage skill sessions
 - Join sessions with other users
 - Rate and review skills
 
-### Communication
+### 💬 Communication
 - Real-time messaging between session participants
 - Session-specific chat rooms
 
-## Technology Stack
+---
 
-### Frontend
-- React 18
-- React Router v6
-- Axios for API requests
-- CSS Modules for styling
+## 🛠️ Technology Stack
 
-### Backend
-- Node.js
-- Express.js
-- MongoDB with Mongoose
-- JWT for authentication
-- Bcrypt for password hashing
+| Layer | Technologies |
+|-------|-------------|
+| **Frontend** | React 18, React Router v6, Axios, CSS Modules |
+| **Backend** | Node.js, Express.js, MongoDB with Mongoose |
+| **Authentication** | JWT, Bcrypt |
+| **Security** | Helmet, CORS |
+| **Development** | Nodemon, Concurrently, Vite |
 
-### Database
-- MongoDB (local development)
-- MongoDB Atlas (production)
+---
 
-## Getting Started
+## 📁 Project Structure
+
+```
+TradeTalents/
+├── backend/           # Node.js/Express backend API
+│   ├── config/        # Database configuration
+│   ├── controllers/   # Request handlers
+│   ├── middleware/    # Custom middleware
+│   ├── models/        # Mongoose models
+│   ├── routes/        # API routes
+│   └── server.js      # Entry point
+└── frontend/          # React frontend application
+    ├── src/
+    │   ├── components/ # Reusable UI components
+    │   ├── pages/      # Page components
+    │   ├── services/   # API service layer
+    │   └── contexts/   # React contexts
+    └── vite.config.js # Vite configuration
+```
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js (v14 or higher)
-- npm or yarn
-- MongoDB (local or Atlas)
+
+- [Node.js](https://nodejs.org/) (v14 or higher)
+- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
+- [MongoDB](https://www.mongodb.com/) (local or Atlas)
 
 ### Installation
 
-1. Clone the repository:
+1. **Clone the repository:**
    ```bash
    git clone <repository-url>
    cd TradeTalents
    ```
 
-2. Install frontend dependencies:
+2. **Install root dependencies:**
    ```bash
-   cd frontend
    npm install
    ```
 
-3. Install backend dependencies:
+3. **Install backend dependencies:**
    ```bash
-   cd ../backend
+   cd backend
    npm install
    ```
 
-4. Set up environment variables (see individual README files for details)
+4. **Install frontend dependencies:**
+   ```bash
+   cd ../frontend
+   npm install
+   ```
 
-### Running the Application
+---
 
-#### Frontend
+## ⚙️ Environment Setup
+
+### Backend Environment Variables
+
+Create a `.env` file in the `backend/` directory with the following variables:
+
+```env
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret_key
+PORT=5000
+```
+
+You can use the provided example:
+```bash
+cd backend
+cp .env.example .env
+```
+
+### Frontend Environment Variables
+
+The frontend uses Vite, which requires environment variables to be prefixed with `VITE_`. Create a `.env` file in the `frontend/` directory:
+
+```env
+VITE_API_URL=http://localhost:5000/api
+```
+
+You can use the provided example:
 ```bash
 cd frontend
+cp .env.example .env
+```
+
+---
+
+## ▶️ Running the Application
+
+### Development Mode (Recommended)
+
+To run both frontend and backend concurrently:
+
+From the root directory:
+```bash
 npm run dev
 ```
 
-#### Backend
+This will start both servers simultaneously:
+- Frontend: http://localhost:5173
+- Backend: http://localhost:5000
+
+### Running Applications Separately
+
+#### Backend Server
 ```bash
 cd backend
 npm run dev
 ```
+- Runs on `http://localhost:5000`
+- API endpoints available at `http://localhost:5000/api/`
 
-## Development
+#### Frontend Server
+```bash
+cd frontend
+npm run dev
+```
+- Runs on `http://localhost:5173` (default Vite port)
+- Automatically proxies API requests to backend
 
-### Folder Structure
-- `frontend/` - React application
-- `backend/` - Node.js/Express API
+### Production Mode
 
-### Environment Variables
-Each part of the application requires specific environment variables. See the individual README files for details.
+#### Backend
+```bash
+cd backend
+npm start
+```
 
-## Deployment
+#### Frontend
+```bash
+cd frontend
+npm run build
+npm run preview
+```
+
+---
+
+## 🧪 Testing
+
+### Backend Testing
+```bash
+cd backend
+npm test
+```
+
+### Frontend Testing
+```bash
+cd frontend
+npm test
+```
+
+---
+
+## 📦 Deployment
 
 ### Frontend
-The frontend can be deployed to any static hosting service (Netlify, Vercel, etc.).
+Build the production-ready frontend:
+```bash
+cd frontend
+npm run build
+```
+The built files will be in the `dist/` directory, ready for deployment to any static hosting service (Netlify, Vercel, etc.).
 
 ### Backend
-The backend can be deployed to any Node.js hosting service (Heroku, DigitalOcean, AWS, etc.).
+Deploy to any Node.js hosting service (Heroku, DigitalOcean, AWS, etc.) with the proper environment variables set.
 
-## Contributing
+---
+
+## 🤝 Contributing
+
+We welcome contributions to TradeTalents! Here's how you can contribute:
+
 1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a pull request
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+---
 
-## Contact
-For questions or support, please open an issue on the repository.
+<p align="center">Made with ❤️ by the TradeTalents Team</p>
