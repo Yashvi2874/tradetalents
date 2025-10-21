@@ -27,16 +27,14 @@ A skill exchange platform built with the MERN stack (MongoDB, Express.js, React,
 
 ## 📸 UI Preview
 
-> **Note:** UI screenshots will be added here to showcase the application interface.
-
 *Dashboard View - Overview of user activities and available sessions*
-![Dashboard Preview](./docs/images/dashboard.png)
+![Dashboard Preview](./images/dashboard.png)
 
 *Browse Skills - Discover and search for skills offered by other users*
-![Browse Skills Preview](./docs/images/browse-skills.png)
+![Browse Skills Preview](./images/browse-skills.png)
 
 *Session Chat - Real-time communication between session participants*
-![Chat Preview](./docs/images/chat.png)
+![Chat Preview](./images/chat.png)
 
 ## 🛠️ Technology Stack
 
