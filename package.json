@@ -1,0 +1,25 @@
+{
+  "name": "tradetalents",
+  "version": "1.0.0",
+  "description": "A skill exchange platform built with the MERN stack",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "start": "node backend/server.js",
+    "build": "npm run build --prefix frontend",
+    "test": "concurrently \"npm test --prefix backend\" \"npm test --prefix frontend\"",
+    "install-all": "npm install && npm install --prefix backend && npm install --prefix frontend"
+  },
+  "keywords": [
+    "mern",
+    "skill-exchange",
+    "react",
+    "node",
+    "mongodb"
+  ],
+  "author": "TradeTalents Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

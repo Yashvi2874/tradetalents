@@ -12,8 +12,6 @@ const connectDB = async () => {
     
     const conn = await mongoose.connect(uri, {
       dbName: dbName,
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
     });
 
     console.log(`MongoDB Connected: ${conn.connection.host}`);
@@ -44,6 +42,16 @@ const connectDB = async () => {
       console.error('2. Navigate to Database Access section');
       console.error('3. Find the database user (yashasvi)');
       console.error('4. Edit the user and assign "Atlas admin" or "Read and write to any database" role');
+      console.error('-----------------------\n');
+    } else if (error.message.includes('getaddrinfo') || error.message.includes('ENOTFOUND')) {
+      console.error('\n--- NETWORK ERROR ---');
+      console.error('This error indicates a network connectivity issue to MongoDB Atlas.');
+      console.error('To fix this issue:');
+      console.error('1. Go to MongoDB Atlas dashboard');
+      console.error('2. Navigate to Network Access section');
+      console.error('3. Add your current IP address to the whitelist');
+      console.error('4. For Render.com deployment, add 0.0.0.0/0 to allow all IPs (for testing)');
+      console.error('5. Or add Render.com IP ranges specifically');
       console.error('-----------------------\n');
     }
     

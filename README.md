@@ -46,8 +46,6 @@ A skill exchange platform built with the MERN stack (MongoDB, Express.js, React,
 | **Security** | Helmet, CORS |
 | **Development** | Nodemon, Concurrently, Vite |
 
----
-
 ## 📁 Project Structure
 
 ```
@@ -86,21 +84,25 @@ TradeTalents/
    cd TradeTalents
    ```
 
-2. **Install root dependencies:**
+2. **Install all dependencies:**
    ```bash
-   npm install
+   npm run install-all
    ```
 
-3. **Install backend dependencies:**
+   Or install manually:
    ```bash
+   # Install root dependencies
+   npm install
+   
+   # Install backend dependencies
    cd backend
    npm install
-   ```
-
-4. **Install frontend dependencies:**
-   ```bash
-   cd ../frontend
+   cd ..
+   
+   # Install frontend dependencies
+   cd frontend
    npm install
+   cd ..
    ```
 
 ---
@@ -184,10 +186,38 @@ npm start
 ```bash
 cd frontend
 npm run build
-npm run preview
 ```
+The built files will be in the `dist/` directory, ready for deployment to any static hosting service (Netlify, Vercel, etc.).
 
----
+## 🚀 Deployment Instructions
+
+### Deploying to Render.com
+
+1. **Create two services on Render:**
+
+   **Web Service for Backend:**
+   - Name: `tradetalents-backend`
+   - Runtime: Node
+   - Build command: `npm install`
+   - Start command: `npm start`
+   - Root directory: `backend`
+   - Add environment variables:
+     - `MONGODB_URI` = your MongoDB connection string
+     - `JWT_SECRET` = your JWT secret
+     - `PORT` = 5000
+
+   **Static Site for Frontend:**
+   - Name: `tradetalents-frontend`
+   - Runtime: Static Site
+   - Build command: `npm install && npm run build`
+   - Publish directory: `dist`
+   - Root directory: `frontend`
+   - Add environment variables:
+     - `VITE_API_URL` = https://your-backend-service.onrender.com/api
+
+2. **Alternative Single Repository Deployment:**
+   - Build command: `npm install && npm run install-all && npm run build`
+   - Start command: `npm start`
 
 ## 🧪 Testing
 
