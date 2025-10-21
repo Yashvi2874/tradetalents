@@ -153,7 +153,7 @@ const deleteSkill = async (req, res) => {
         return res.status(403).json({ message: 'Not authorized to delete this skill' });
       }
       
-      await skill.remove();
+      await skill.deleteOne();
       res.json({ message: 'Skill removed' });
     } else {
       res.status(404).json({ message: 'Skill not found' });

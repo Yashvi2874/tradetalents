@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import DashboardHeader from '../components/DashboardHeader';
 import StatsCard from '../components/StatsCard';
 import SessionList from '../components/SessionList';
 import SkillsSection from '../components/SkillsSection';
@@ -52,15 +51,28 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-page">
-      <DashboardHeader user={user} />
-      
       <div className="dashboard-container">
+        {/* Welcome Section */}
+        <motion.section 
+          className="welcome-section card"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h1 className="welcome-title">
+            Welcome back, <span className="welcome-highlight">{user?.name || 'User'}</span>!
+          </h1>
+          <p className="welcome-subtitle">
+            Ready to learn something new today? Let's get started!
+          </p>
+        </motion.section>
+
         {/* Stats Section */}
         <motion.section 
           className="stats-section"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
         >
           <div className="stats-grid">
             {stats.map((stat, index) => (
@@ -68,7 +80,7 @@ const Dashboard = () => {
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1, duration: 0.5 }}
+                transition={{ delay: (index + 1) * 0.1, duration: 0.5 }}
               >
                 <StatsCard 
                   title={stat.title} 
@@ -87,23 +99,27 @@ const Dashboard = () => {
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
             >
-              <SessionList 
-                sessions={upcomingSessions}
-                title="Upcoming Sessions"
-              />
+              <div className="content-section">
+                <h3>Upcoming Sessions</h3>
+                <SessionList 
+                  sessions={upcomingSessions}
+                />
+              </div>
             </motion.div>
             
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
             >
-              <SkillsSection 
-                skills={mySkills}
-                title="My Skills"
-              />
+              <div className="content-section">
+                <h3>My Skills</h3>
+                <SkillsSection 
+                  skills={mySkills}
+                />
+              </div>
             </motion.div>
           </div>
         </div>

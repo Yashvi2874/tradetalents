@@ -1,18 +1,10 @@
-<div align="left">
-
 # TradeTalents 🚀
 
-</div>
+A skill exchange platform built with the MERN stack (MongoDB, Express.js, React, Node.js). This platform allows users to share their skills, learn from others, and participate in skill-based sessions.
 
-<p align="left">
+<p align="center">
   <img src="https://img.shields.io/badge/MERN-Stack-blue?style=for-the-badge&logo=javascript" alt="MERN Stack">
 </p>
-
-<p align="left">
-  A skill exchange platform built with the MERN stack (MongoDB, Express.js, React, Node.js). This platform allows users to share their skills, learn from others, and participate in skill-based sessions.
-</p>
-
----
 
 ## 🌟 Features
 
@@ -32,6 +24,19 @@
 - Session-specific chat rooms
 
 ---
+
+## 📸 UI Preview
+
+> **Note:** UI screenshots will be added here to showcase the application interface.
+
+*Dashboard View - Overview of user activities and available sessions*
+![Dashboard Preview](./docs/images/dashboard.png)
+
+*Browse Skills - Discover and search for skills offered by other users*
+![Browse Skills Preview](./docs/images/browse-skills.png)
+
+*Session Chat - Real-time communication between session participants*
+![Chat Preview](./docs/images/chat.png)
 
 ## 🛠️ Technology Stack
 

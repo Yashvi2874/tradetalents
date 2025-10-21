@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import Header from '../components/Header';
-import DashboardHeader from '../components/DashboardHeader';
 import './Profile.css';
 
 const Profile = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
@@ -13,14 +11,6 @@ const Profile = () => {
     university: user?.university || '',
     bio: user?.bio || ''
   });
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -39,9 +29,6 @@ const Profile = () => {
 
   return (
     <div className="profile-page">
-      {/* Removed Header since it's now in App.jsx */}
-      <DashboardHeader user={user} onLogout={handleLogout} />
-      
       <div className="profile-container">
         <div className="profile-content">
           <div className="profile-header">

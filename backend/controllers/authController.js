@@ -13,7 +13,7 @@ const generateToken = (userId) => {
 // @access  Public
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, university } = req.body;
+    const { name, email, password, university, role } = req.body;
 
     // Check if user already exists
     const userExists = await User.findOne({ email });
@@ -21,14 +21,22 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Create user
-    const user = await User.create({
+    // Create user with optional role (default is 'student')
+    const userData = {
       name,
       email,
       password,
       university,
       credits: 50 // New users get 50 credits
-    });
+    };
+
+    // Only allow setting role to 'tutor' or 'student' (not admin)
+    if (role && (role === 'tutor' || role === 'student')) {
+      userData.role = role;
+    }
+
+    // Create user
+    const user = await User.create(userData);
 
     if (user) {
       const token = generateToken(user._id);
@@ -38,6 +46,7 @@ const registerUser = async (req, res) => {
         email: user.email,
         university: user.university,
         credits: user.credits,
+        role: user.role,
         token,
       });
     } else {
@@ -66,6 +75,7 @@ const loginUser = async (req, res) => {
         email: user.email,
         university: user.university,
         credits: user.credits,
+        role: user.role,
         token,
       });
     } else {

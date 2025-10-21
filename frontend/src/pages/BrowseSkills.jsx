@@ -9,7 +9,6 @@ const BrowseSkills = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('popular');
 
-  // Mock skills data
   const skills = [
     {
       id: 1,
@@ -87,7 +86,6 @@ const BrowseSkills = () => {
 
   const categories = ['all', 'Programming', 'Data Science', 'Design', 'Business', 'Creative'];
 
-  // Filter and sort skills
   const filteredSkills = skills
     .filter(skill => {
       const matchesSearch = skill.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -105,7 +103,7 @@ const BrowseSkills = () => {
     });
 
   return (
-    <div className="browse-skills gradient-bg">
+    <div className="browse-skills">
       <div className="browse-skills-container">
         <motion.div 
           className="browse-skills-header"

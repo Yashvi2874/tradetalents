@@ -26,10 +26,13 @@ const Header = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  // Close menu when clicking outside
+  // Close menus when clicking outside
   useEffect(() => {
-    const handleClickOutside = () => {
-      if (isMenuOpen) setIsMenuOpen(false);
+    const handleClickOutside = (e) => {
+      // Close menu if clicking outside and menu is open
+      if (isMenuOpen && !e.target.closest('.nav') && !e.target.closest('.menu-toggle')) {
+        setIsMenuOpen(false);
+      }
     };
 
     document.addEventListener('click', handleClickOutside);
@@ -37,6 +40,21 @@ const Header = () => {
       document.removeEventListener('click', handleClickOutside);
     };
   }, [isMenuOpen]);
+
+  // Navigation items for logged in users (reordered as requested)
+  const loggedInNavItems = [
+    { to: "/", label: "Home" },
+    { to: "/dashboard", label: "Dashboard" },
+    { to: "/browse", label: "Browse" },
+    { to: "/credits", label: "Credits" },
+    { to: "/messages", label: "Messages" },
+    { to: "/calendar", label: "Calendar" }
+  ];
+
+  // Navigation items for guests
+  const guestNavItems = [
+    { to: "/", label: "Home" }
+  ];
 
   return (
     <header className="header">
@@ -64,59 +82,29 @@ const Header = () => {
           </motion.span>
         </motion.div>
         
-        <div className="menu-toggle" onClick={toggleMenu}>
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
+        <div className="header-right">
+          <div className="menu-toggle" onClick={toggleMenu}>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
 
-        <nav className={`nav ${isMenuOpen ? 'mobile-open' : ''}`}>
-          <ul>
-            <motion.li
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.3 }}
-            >
-              <NavLink to="/" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>Home</NavLink>
-            </motion.li>
-            
-            {user ? (
-              <>
+          <nav className={`nav ${isMenuOpen ? 'mobile-open' : ''}`}>
+            <ul>
+              {(user ? loggedInNavItems : guestNavItems).map((item, index) => (
                 <motion.li
+                  key={item.to}
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2, duration: 0.3 }}
+                  transition={{ delay: (index + 1) * 0.1, duration: 0.3 }}
                 >
-                  <NavLink to="/dashboard" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>Dashboard</NavLink>
+                  <NavLink to={item.to} className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
+                    {item.label}
+                  </NavLink>
                 </motion.li>
-                <motion.li
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3, duration: 0.3 }}
-                >
-                  <NavLink to="/browse" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>Browse Skills</NavLink>
-                </motion.li>
-                <motion.li
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4, duration: 0.3 }}
-                >
-                  <NavLink to="/credits" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>Buy Credits</NavLink>
-                </motion.li>
-                <motion.li
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5, duration: 0.3 }}
-                >
-                  <NavLink to="/messages" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>Messages</NavLink>
-                </motion.li>
-                <motion.li
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6, duration: 0.3 }}
-                >
-                  <NavLink to="/calendar" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>Calendar</NavLink>
-                </motion.li>
+              ))}
+              
+              {user ? (
                 <motion.li
                   className="user-menu"
                   initial={{ opacity: 0, y: -20 }}
@@ -127,6 +115,7 @@ const Header = () => {
                     className="user-name"
                     whileHover={{ scale: 1.05 }}
                     transition={{ type: "spring", stiffness: 400 }}
+                    onClick={() => navigate('/dashboard/profile')}
                   >
                     {user.name}
                   </motion.span>
@@ -139,42 +128,48 @@ const Header = () => {
                     Logout
                   </motion.button>
                 </motion.li>
-              </>
-            ) : (
-              <>
-                <motion.li
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2, duration: 0.3 }}
-                >
-                  <NavLink to="/login" className={({isActive}) => `nav-link btn-login ${isActive ? 'active' : ''}`}>Login</NavLink>
-                </motion.li>
-                <motion.li
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3, duration: 0.3 }}
-                >
-                  <NavLink to="/register" className={({isActive}) => `nav-link btn-signup ${isActive ? 'active' : ''}`}>Sign Up</NavLink>
-                </motion.li>
-              </>
-            )}
-            <li>
-              <motion.button
-                type="button"
-                className="theme-toggle"
-                onClick={(e) => { e.stopPropagation(); toggleTheme(); }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-              >
-                <span className="theme-icon" aria-hidden>
-                  {theme === 'dark' ? '☀️' : '🌙'}
-                </span>
-                <span className="theme-label">{theme === 'dark' ? 'Light' : 'Dark'}</span>
-              </motion.button>
-            </li>
-          </ul>
-        </nav>
+              ) : (
+                <>
+                  <motion.li
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8, duration: 0.3 }}
+                  >
+                    <NavLink to="/login" className={({isActive}) => `nav-link btn-login ${isActive ? 'active' : ''}`}>
+                      Login
+                    </NavLink>
+                  </motion.li>
+                  <motion.li
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.9, duration: 0.3 }}
+                  >
+                    <NavLink to="/register" className={({isActive}) => `nav-link btn-signup ${isActive ? 'active' : ''}`}>
+                      Sign Up
+                    </NavLink>
+                  </motion.li>
+                </>
+              )}
+            </ul>
+          </nav>
+          
+          <motion.button
+            type="button"
+            className="theme-toggle"
+            onClick={toggleTheme}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 1.0, duration: 0.3 }}
+          >
+            <span className="theme-icon" aria-hidden>
+              {theme === 'dark' ? '☀️' : '🌙'}
+            </span>
+            <span className="theme-label">{theme === 'dark' ? 'Light' : 'Dark'}</span>
+          </motion.button>
+        </div>
       </div>
     </header>
   );

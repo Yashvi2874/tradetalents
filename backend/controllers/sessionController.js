@@ -135,7 +135,7 @@ const deleteSession = async (req, res) => {
         return res.status(403).json({ message: 'Not authorized to delete this session' });
       }
 
-      await session.remove();
+      await session.deleteOne();
       res.json({ message: 'Session removed' });
     } else {
       res.status(404).json({ message: 'Session not found' });

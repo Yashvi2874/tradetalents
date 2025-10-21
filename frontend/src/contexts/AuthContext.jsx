@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { authAPI } from '../services/api';
 
 // Create the context
 const AuthContext = createContext();
@@ -22,64 +23,69 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Check if there's a user in localStorage
     const savedUser = localStorage.getItem('user');
-    if (savedUser) {
+    const token = localStorage.getItem('token');
+    
+    if (savedUser && token) {
       try {
         setUser(JSON.parse(savedUser));
       } catch (e) {
         console.error('Error parsing user data:', e);
         localStorage.removeItem('user');
+        localStorage.removeItem('token');
       }
     }
   }, []);
 
-  // Login function - no verification required
+  // Login function - with actual API call
   const login = async (credentials) => {
     try {
       setLoading(true);
       setError(null);
       
-      // Simulate instant login without API call
-      const user = {
-        id: Date.now(),
-        name: credentials.email.split('@')[0],
-        email: credentials.email,
-        university: 'Example University',
-        credits: 100
-      };
+      const response = await authAPI.login(credentials);
       
-      setUser(user);
-      localStorage.setItem('user', JSON.stringify(user));
-      setLoading(false);
-      return { success: true };
+      if (response.data) {
+        const { token, ...userData } = response.data;
+        
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('token', token);
+        
+        setLoading(false);
+        return { success: true };
+      } else {
+        throw new Error('Invalid response from server');
+      }
     } catch (err) {
-      const message = 'Login failed';
+      const message = err.response?.data?.message || 'Login failed';
       setError(message);
       setLoading(false);
       return { success: false, error: message };
     }
   };
 
-  // Register function - no verification required
+  // Register function - with actual API call
   const register = async (userData) => {
     try {
       setLoading(true);
       setError(null);
       
-      // Simulate instant registration without API call
-      const user = {
-        id: Date.now(),
-        name: userData.name,
-        email: userData.email,
-        university: userData.university,
-        credits: 50 // New users get 50 credits
-      };
+      const response = await authAPI.register(userData);
       
-      setUser(user);
-      localStorage.setItem('user', JSON.stringify(user));
-      setLoading(false);
-      return { success: true };
+      if (response.data) {
+        const { token, ...userData } = response.data;
+        
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('token', token);
+        
+        setLoading(false);
+        return { success: true };
+      } else {
+        throw new Error('Invalid response from server');
+      }
     } catch (err) {
-      const message = 'Registration failed';
+      const message = err.response?.data?.message || 'Registration failed';
       setError(message);
       setLoading(false);
       return { success: false, error: message };
@@ -90,6 +96,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
   };
 
   // Context value

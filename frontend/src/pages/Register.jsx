@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import Header from '../components/Header';
 import './Auth.css';
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    name: 'John Doe',
-    email: 'john@example.com',
-    university: 'Example University',
-    password: 'password123',
-    confirmPassword: 'password123'
+    name: '',
+    email: '',
+    university: '',
+    password: '',
+    confirmPassword: ''
   });
   
   const [errors, setErrors] = useState({});
@@ -35,25 +34,54 @@ const Register = () => {
     }
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.name.trim()) {
+      newErrors.name = 'Full name is required';
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = 'Name must be at least 2 characters';
+    }
+    
+    if (!formData.email) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email address is invalid';
+    }
+    
+    if (!formData.university.trim()) {
+      newErrors.university = 'University is required';
+    } else if (formData.university.trim().length < 2) {
+      newErrors.university = 'University name must be at least 2 characters';
+    }
+    
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+    
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+    
+    return newErrors;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    const formErrors = validateForm();
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+      return;
+    }
     
     setIsSubmitting(true);
     
     try {
-      // Simple validation
-      if (!formData.name || !formData.email || !formData.university || !formData.password) {
-        setErrors({ form: 'Please fill in all fields' });
-        setIsSubmitting(false);
-        return;
-      }
-      
-      if (formData.password !== formData.confirmPassword) {
-        setErrors({ form: 'Passwords do not match' });
-        setIsSubmitting(false);
-        return;
-      }
-      
       const result = await register(formData);
       if (result.success) {
         navigate('/dashboard');
@@ -61,39 +89,7 @@ const Register = () => {
         setErrors({ form: result.error || 'Registration failed' });
       }
     } catch (error) {
-      setErrors({ form: 'An unexpected error occurred' });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Single click registration
-  const handleDemoRegister = async () => {
-    setFormData({
-      name: 'Jane Smith',
-      email: 'jane@example.com',
-      university: 'Example University',
-      password: 'password123',
-      confirmPassword: 'password123'
-    });
-    
-    setIsSubmitting(true);
-    
-    try {
-      const result = await register({
-        name: 'Jane Smith',
-        email: 'jane@example.com',
-        university: 'Example University',
-        password: 'password123',
-        confirmPassword: 'password123'
-      });
-      if (result.success) {
-        navigate('/dashboard');
-      } else {
-        setErrors({ form: result.error || 'Registration failed' });
-      }
-    } catch (error) {
-      setErrors({ form: 'An unexpected error occurred' });
+      setErrors({ form: 'An unexpected error occurred. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -101,9 +97,8 @@ const Register = () => {
 
   return (
     <div className="auth-page">
-      {/* Removed Header since it's now in App.jsx */}
       <div className="auth-container">
-        <div className="auth-form">
+        <div className="auth-form card">
           <h2>Create an Account</h2>
           {errors.form && (
             <div className="error-message">
@@ -120,6 +115,7 @@ const Register = () => {
                 value={formData.name}
                 onChange={handleChange}
                 className={errors.name ? 'error' : ''}
+                placeholder="Enter your full name"
               />
               {errors.name && <span className="error-text">{errors.name}</span>}
             </div>
@@ -132,6 +128,7 @@ const Register = () => {
                 value={formData.email}
                 onChange={handleChange}
                 className={errors.email ? 'error' : ''}
+                placeholder="Enter your email"
               />
               {errors.email && <span className="error-text">{errors.email}</span>}
             </div>
@@ -144,6 +141,7 @@ const Register = () => {
                 value={formData.university}
                 onChange={handleChange}
                 className={errors.university ? 'error' : ''}
+                placeholder="Enter your university"
               />
               {errors.university && <span className="error-text">{errors.university}</span>}
             </div>
@@ -156,6 +154,7 @@ const Register = () => {
                 value={formData.password}
                 onChange={handleChange}
                 className={errors.password ? 'error' : ''}
+                placeholder="Create a password"
               />
               {errors.password && <span className="error-text">{errors.password}</span>}
             </div>
@@ -168,6 +167,7 @@ const Register = () => {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 className={errors.confirmPassword ? 'error' : ''}
+                placeholder="Confirm your password"
               />
               {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
             </div>
@@ -180,16 +180,6 @@ const Register = () => {
             </button>
           </form>
           
-          <div className="demo-register">
-            <button 
-              onClick={handleDemoRegister}
-              className="btn secondary full-width"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Registering...' : 'Demo Register (Single Click)'}
-            </button>
-          </div>
-          
           <div className="auth-links">
             <p>
               Already have an account? <Link to="/login">Login here</Link>
@@ -200,7 +190,6 @@ const Register = () => {
           </div>
         </div>
       </div>
-      {/* Removed Footer since it's now in App.jsx */}
     </div>
   );
 };

@@ -5,34 +5,58 @@
   --bg-primary: #0f172a;
   --bg-secondary: #1e293b;
   --bg-tertiary: #334155;
+  --bg-card: rgba(30, 41, 59, 0.5);
+  --bg-input: rgba(15, 23, 42, 0.5);
   --text-primary: #f1f5f9;
   --text-secondary: #cbd5e1;
   --text-tertiary: #94a3b8;
+  --text-placeholder: #64748b;
   --accent-primary: #3b82f6;
   --accent-secondary: #60a5fa;
   --accent-tertiary: #93c5fd;
   --success: #10b981;
   --warning: #f59e0b;
   --error: #ef4444;
+  --border-primary: rgba(148, 163, 184, 0.1);
+  --border-secondary: rgba(148, 163, 184, 0.2);
+  --border-tertiary: rgba(148, 163, 184, 0.3);
   --border-radius: 12px;
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --backdrop-blur: blur(10px);
 }
 
 [data-theme="light"] {
   --bg-primary: #f2f5f9;
   --bg-secondary: #ffffff;
   --bg-tertiary: #e5eaf1;
+  --bg-card: rgba(255, 255, 255, 0.8);
+  --bg-input: rgba(248, 250, 252, 0.8);
   --text-primary: #0f172a;
   --text-secondary: #334155;
   --text-tertiary: #64748b;
+  --text-placeholder: #94a3b8;
   --accent-primary: #2563eb;
   --accent-secondary: #3b82f6;
   --accent-tertiary: #60a5fa;
   --success: #16a34a;
   --warning: #d97706;
   --error: #dc2626;
+  --border-primary: rgba(203, 213, 225, 0.3);
+  --border-secondary: rgba(203, 213, 225, 0.5);
+  --border-tertiary: rgba(203, 213, 225, 0.8);
   --border-radius: 12px;
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --backdrop-blur: blur(12px);
 }
 
 * {
@@ -66,12 +90,12 @@ main {
 
 /* Card styles with 3D effects */
 .card {
-  background: rgba(30, 41, 59, 0.5);
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
   border-radius: var(--border-radius);
   padding: 1.5rem;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: var(--backdrop-blur);
+  box-shadow: var(--shadow-card);
   transition: var(--transition);
   position: relative;
   overflow: hidden;
@@ -101,9 +125,9 @@ main {
 }
 
 .card.glass {
-  background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(148, 163, 184, 0.15);
+  background: var(--bg-card);
+  backdrop-filter: var(--backdrop-blur);
+  border: 1px solid var(--border-primary);
 }
 
 /* Button styles */
@@ -150,14 +174,14 @@ main {
 }
 
 .btn.secondary {
-  background: rgba(30, 41, 59, 0.5);
+  background: var(--bg-card);
   color: var(--text-primary);
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  border: 1px solid var(--border-secondary);
 }
 
 .btn.secondary:hover {
-  background: rgba(30, 41, 59, 0.7);
-  border-color: rgba(148, 163, 184, 0.4);
+  background: var(--bg-secondary);
+  border-color: var(--border-tertiary);
 }
 
 .btn.success {
@@ -193,8 +217,8 @@ main {
   width: 100%;
   padding: 0.75rem 1rem;
   border-radius: var(--border-radius);
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: var(--bg-input);
+  border: 1px solid var(--border-secondary);
   color: var(--text-primary);
   font-family: inherit;
   font-size: 1rem;
@@ -207,7 +231,11 @@ main {
   outline: none;
   border-color: var(--accent-primary);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-  background: rgba(15, 23, 42, 0.7);
+  background: var(--bg-secondary);
+}
+
+.form-group input::placeholder {
+  color: var(--text-placeholder);
 }
 
 /* Utility classes */
@@ -305,7 +333,31 @@ main {
 }
 
 /* Responsive design */
-@media (max-width: 768px) {
+/* Extra small devices (phones, 480px and down) */
+@media (max-width: 480px) {
+  .container {
+    padding: 0 0.75rem;
+  }
+  
+  .card {
+    padding: 1rem;
+  }
+  
+  .btn {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Small devices (phones, 576px and up) */
+@media (min-width: 481px) and (max-width: 576px) {
+  .container {
+    padding: 0 1rem;
+  }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 577px) and (max-width: 768px) {
   main {
     padding: 0;
   }
@@ -317,5 +369,19 @@ main {
   .btn {
     padding: 0.6rem 1.2rem;
     font-size: 0.9rem;
+  }
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 769px) and (max-width: 992px) {
+  .container {
+    padding: 0 1.5rem;
+  }
+}
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 993px) {
+  .container {
+    padding: 0 2rem;
   }
 }

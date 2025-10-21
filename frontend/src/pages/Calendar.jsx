@@ -408,7 +408,7 @@ const Calendar = () => {
   };
 
   return (
-    <div className="calendar-container gradient-bg">
+    <div className="calendar-container">
       <motion.div 
         className="calendar-section card glass"
         initial={{ opacity: 0, x: -20 }}

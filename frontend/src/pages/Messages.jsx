@@ -135,83 +135,70 @@ const Messages = () => {
   return (
     <div className="messages-page">
       <div className="messages-container">
-        <div className="messages-header">
-          <h1>Messages</h1>
-          <div className="user-info">
-            <span className="welcome-text">Welcome back, {user?.name || 'User'}!</span>
-            <div className="credits-badge">
-              <span>{user?.credits || 0} Credits</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="messages-content">
-          <div className="conversations-panel">
-            <div className="conversations-header">
-              <h2>Conversations</h2>
-              {/* Removed Create Session button */}
-            </div>
-            
-            <div className="conversations-list">
-              {conversations.map(conversation => (
-                <div 
-                  key={conversation.id} 
-                  className={`conversation-item ${selectedConversation?.id === conversation.id ? 'active' : ''}`}
-                  onClick={() => handleConversationSelect(conversation)}
-                >
-                  <div className="conversation-avatar">
-                    {conversation.instructor.avatar ? (
-                      <img src={conversation.instructor.avatar} alt={conversation.instructor.name} />
-                    ) : (
-                      <div className="avatar-placeholder">
-                        {conversation.instructor.name.charAt(0)}
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="conversation-info">
-                    <div className="conversation-top">
-                      <h3 className="conversation-title">{conversation.sessionTitle}</h3>
-                      <span className="conversation-time">{formatTime(conversation.timestamp)}</span>
-                    </div>
-                    
-                    <div className="conversation-bottom">
-                      <p className="conversation-instructor">with {conversation.instructor.name}</p>
-                      <p className="conversation-preview">{conversation.lastMessage}</p>
-                    </div>
-                    
-                    <div className="session-details">
-                      <span className={`session-status ${getStatusClass(conversation.status)}`}>
-                        {getStatusText(conversation.status)}
-                      </span>
-                      <span className="session-time">
-                        {formatSessionTime(conversation.startTime, conversation.endTime)}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {conversation.unread > 0 && (
-                    <div className="unread-badge">{conversation.unread}</div>
-                  )}
-                </div>
-              ))}
-            </div>
+        <div className="conversations-panel">
+          <div className="conversations-header">
+            <h2>Messages</h2>
           </div>
           
-          <div className="chat-panel">
-            {selectedConversation ? (
-              <Chat
-                sessionId={selectedConversation.sessionId}
-                sessionTitle={selectedConversation.sessionTitle}
-                isOpen={true}
-                onClose={() => {}}
-              />
-            ) : (
-              <div className="no-conversation-selected">
-                <p>Select a conversation to start chatting</p>
+          <div className="conversations-list">
+            {conversations.map(conversation => (
+              <div 
+                key={conversation.id} 
+                className={`conversation-item ${selectedConversation?.id === conversation.id ? 'active' : ''}`}
+                onClick={() => handleConversationSelect(conversation)}
+              >
+                <div className="conversation-avatar">
+                  {conversation.instructor.avatar ? (
+                    <img src={conversation.instructor.avatar} alt={conversation.instructor.name} />
+                  ) : (
+                    <div className="avatar-placeholder">
+                      {conversation.instructor.name.charAt(0)}
+                    </div>
+                  )}
+                </div>
+                
+                <div className="conversation-info">
+                  <div className="conversation-top">
+                    <h3 className="conversation-title">{conversation.sessionTitle}</h3>
+                    <span className="conversation-time">{formatTime(conversation.timestamp)}</span>
+                  </div>
+                  
+                  <div className="conversation-bottom">
+                    <p className="conversation-instructor">with {conversation.instructor.name}</p>
+                    <p className="conversation-preview">{conversation.lastMessage}</p>
+                  </div>
+                  
+                  <div className="session-details">
+                    <span className={`session-status ${getStatusClass(conversation.status)}`}>
+                      {getStatusText(conversation.status)}
+                    </span>
+                    <span className="session-time">
+                      {formatSessionTime(conversation.startTime, conversation.endTime)}
+                    </span>
+                  </div>
+                </div>
+                
+                {conversation.unread > 0 && (
+                  <div className="unread-badge">{conversation.unread}</div>
+                )}
               </div>
-            )}
+            ))}
           </div>
+        </div>
+        
+        <div className="chat-panel">
+          {selectedConversation ? (
+            <Chat
+              sessionId={selectedConversation.sessionId}
+              sessionTitle={selectedConversation.sessionTitle}
+              isOpen={true}
+              onClose={() => {}}
+            />
+          ) : (
+            <div className="no-conversation-selected">
+              <p>Select a conversation to start chatting</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

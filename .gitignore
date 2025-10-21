@@ -37,3 +37,7 @@ Thumbs.db
 *.swp
 *.swo
 .config/
+
+# Documentation images placeholder
+docs/images/*.png
+!docs/images/README.md

@@ -28,6 +28,15 @@ export const ThemeProvider = ({ children }) => {
     } catch {}
     const root = document.documentElement;
     root.setAttribute('data-theme', theme);
+    
+    // Add class to body for additional styling options
+    if (theme === 'dark') {
+      document.body.classList.add('dark-theme');
+      document.body.classList.remove('light-theme');
+    } else {
+      document.body.classList.add('light-theme');
+      document.body.classList.remove('dark-theme');
+    }
   }, [theme]);
 
   const value = useMemo(() => ({

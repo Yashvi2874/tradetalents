@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import Header from '../components/Header';
 import './Auth.css';
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    email: 'student@example.com',
-    password: 'password123'
+    email: '',
+    password: ''
   });
   
   const [errors, setErrors] = useState({});
@@ -32,19 +31,36 @@ const Login = () => {
     }
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.email) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email address is invalid';
+    }
+    
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+    
+    return newErrors;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    const formErrors = validateForm();
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+      return;
+    }
     
     setIsSubmitting(true);
     
     try {
-      // Simple validation
-      if (!formData.email || !formData.password) {
-        setErrors({ form: 'Please fill in all fields' });
-        setIsSubmitting(false);
-        return;
-      }
-      
       const result = await login(formData);
       if (result.success) {
         navigate('/dashboard');
@@ -52,33 +68,7 @@ const Login = () => {
         setErrors({ form: result.error || 'Login failed' });
       }
     } catch (error) {
-      setErrors({ form: 'An unexpected error occurred' });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Single click login
-  const handleDemoLogin = async () => {
-    setFormData({
-      email: 'student@example.com',
-      password: 'password123'
-    });
-    
-    setIsSubmitting(true);
-    
-    try {
-      const result = await login({
-        email: 'student@example.com',
-        password: 'password123'
-      });
-      if (result.success) {
-        navigate('/dashboard');
-      } else {
-        setErrors({ form: result.error || 'Login failed' });
-      }
-    } catch (error) {
-      setErrors({ form: 'An unexpected error occurred' });
+      setErrors({ form: 'An unexpected error occurred. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -86,9 +76,8 @@ const Login = () => {
 
   return (
     <div className="auth-page">
-      {/* Removed Header since it's now in App.jsx */}
       <div className="auth-container">
-        <div className="auth-form">
+        <div className="auth-form card">
           <h2>Login to Your Account</h2>
           {errors.form && (
             <div className="error-message">
@@ -105,6 +94,7 @@ const Login = () => {
                 value={formData.email}
                 onChange={handleChange}
                 className={errors.email ? 'error' : ''}
+                placeholder="Enter your email"
               />
               {errors.email && <span className="error-text">{errors.email}</span>}
             </div>
@@ -117,6 +107,7 @@ const Login = () => {
                 value={formData.password}
                 onChange={handleChange}
                 className={errors.password ? 'error' : ''}
+                placeholder="Enter your password"
               />
               {errors.password && <span className="error-text">{errors.password}</span>}
             </div>
@@ -129,16 +120,6 @@ const Login = () => {
             </button>
           </form>
           
-          <div className="demo-login">
-            <button 
-              onClick={handleDemoLogin}
-              className="btn secondary full-width"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Logging in...' : 'Demo Login (Single Click)'}
-            </button>
-          </div>
-          
           <div className="auth-links">
             <p>
               Don't have an account? <Link to="/register">Register here</Link>
@@ -149,7 +130,6 @@ const Login = () => {
           </div>
         </div>
       </div>
-      {/* Removed Footer since it's now in App.jsx */}
     </div>
   );
 };

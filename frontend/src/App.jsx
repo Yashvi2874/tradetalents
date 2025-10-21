@@ -7,7 +7,6 @@ import './App.css'
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
-// Import page components (to be created)
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -19,17 +18,16 @@ import Credits from './pages/Credits'
 import BrowseSkills from './pages/BrowseSkills'
 import Messages from './pages/Messages'
 import Calendar from './pages/Calendar'
+import Test from './pages/Test'
 
 function App() {
   useEffect(() => {
-    // Initialize AOS animations
     AOS.init({
       duration: 1000,
       once: true,
       mirror: false
     });
     
-    // Refresh AOS on route changes
     AOS.refresh();
   }, []);
 
@@ -81,6 +79,7 @@ function App() {
               <Calendar />
             </ProtectedRoute>
           } />
+          <Route path="/test" element={<Test />} />
         </Routes>
       </main>
       <Footer />

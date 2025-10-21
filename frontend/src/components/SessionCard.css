@@ -1,15 +1,17 @@
 .session-card {
-  background-color: white;
+  background-color: var(--bg-secondary);
   border-radius: 0.75rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
   margin-bottom: 1rem;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid var(--bg-tertiary);
 }
 
 .session-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-color: var(--accent-primary);
 }
 
 .session-header {
@@ -21,13 +23,13 @@
 
 .session-title {
   font-size: 1.25rem;
-  color: #1e293b;
+  color: var(--text-primary);
   margin: 0;
   flex: 1;
 }
 
 .session-price {
-  background-color: #2563eb;
+  background-color: var(--accent-primary);
   color: white;
   padding: 0.25rem 0.75rem;
   border-radius: 1rem;
@@ -45,11 +47,11 @@
 
 .session-details .label {
   font-weight: 600;
-  color: #64748b;
+  color: var(--text-tertiary);
 }
 
 .session-description {
-  color: #64748b;
+  color: var(--text-tertiary);
   margin-bottom: 1.5rem;
 }
 
