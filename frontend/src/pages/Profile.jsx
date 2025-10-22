@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import './Profile.css';
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
@@ -25,6 +27,15 @@ const Profile = () => {
     console.log('Updating profile:', profileData);
     // Update profile logic would go here
     setIsEditing(false);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   return (
@@ -109,9 +120,17 @@ const Profile = () => {
             </div>
           )}
         </div>
+        
+        {/* Logout button at the bottom for mobile */}
+        <div className="logout-section">
+          <button 
+            className="btn-logout"
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
+        </div>
       </div>
-      
-      {/* Removed Footer since it's now in App.jsx */}
     </div>
   );
 };

@@ -1,73 +1,153 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import io from 'socket.io-client';
 import './Chat.css';
 
-const Chat = ({ sessionId, sessionTitle, isOpen, onClose }) => {
+const Chat = ({ sessionId, sessionTitle, isOpen, onClose, tutorId, tutorName, skillContext }) => {
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingUsers, setTypingUsers] = useState([]);
   const messagesEndRef = useRef(null);
+  const socketRef = useRef(null);
 
-  // Mock messages data
-  const mockMessages = [
-    {
-      id: 1,
-      sender: 'Alex Johnson',
-      senderId: 'tutor1',
-      content: 'Hi everyone! Welcome to the JavaScript Fundamentals session.',
-      timestamp: new Date(Date.now() - 3600000),
-      isTutor: true
-    },
-    {
-      id: 2,
-      sender: 'Sarah Miller',
-      senderId: 'student1',
-      content: 'Excited to learn more about closures today!',
-      timestamp: new Date(Date.now() - 3500000),
-      isTutor: false
-    },
-    {
-      id: 3,
-      sender: 'You',
-      senderId: user?.id || 'you',
-      content: 'Looking forward to this session. Are we starting with basics?',
-      timestamp: new Date(Date.now() - 3400000),
-      isTutor: false
-    },
-    {
-      id: 4,
-      sender: 'Alex Johnson',
-      senderId: 'tutor1',
-      content: 'Yes, we\'ll start with the fundamentals and work our way up to more advanced concepts.',
-      timestamp: new Date(Date.now() - 3300000),
-      isTutor: true
-    }
-  ];
-
+  // Initialize WebSocket connection
   useEffect(() => {
-    // Simulate loading messages
-    setMessages(mockMessages);
-  }, [sessionId]);
+    // Use import.meta.env for Vite applications instead of process.env
+    const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+    
+    // Create socket connection
+    socketRef.current = io(API_URL, {
+      transports: ['websocket'],
+      withCredentials: true
+    });
+
+    // Join the session room or create a tutor chat room
+    const roomId = sessionId || `tutor-${tutorId}-${user?._id}`;
+    
+    socketRef.current.emit('join-session', {
+      sessionId: roomId,
+      userId: user?._id,
+      userName: user?.name || 'Anonymous'
+    });
+
+    // Listen for incoming messages
+    socketRef.current.on('receive-message', (message) => {
+      setMessages(prevMessages => [...prevMessages, message]);
+    });
+
+    // Listen for typing indicators
+    socketRef.current.on('user-typing', (data) => {
+      if (data.userId !== user?._id) {
+        if (data.isTyping) {
+          setTypingUsers(prev => [...prev, data.userName]);
+        } else {
+          setTypingUsers(prev => prev.filter(name => name !== data.userName));
+        }
+      }
+    });
+
+    // Listen for user join/leave events
+    socketRef.current.on('user-joined', (data) => {
+      setMessages(prevMessages => [...prevMessages, {
+        id: Date.now(),
+        system: true,
+        content: data.message,
+        timestamp: new Date()
+      }]);
+    });
+
+    socketRef.current.on('user-left', (data) => {
+      setMessages(prevMessages => [...prevMessages, {
+        id: Date.now(),
+        system: true,
+        content: data.message,
+        timestamp: new Date()
+      }]);
+    });
+
+    // Clean up on unmount
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
+  }, [sessionId, tutorId, user]);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Handle typing indicator
+  useEffect(() => {
+    let typingTimeout;
+    
+    if (newMessage.trim() !== '') {
+      // Emit typing start
+      const roomId = sessionId || `tutor-${tutorId}-${user?._id}`;
+      
+      socketRef.current?.emit('typing', {
+        sessionId: roomId,
+        userId: user?._id,
+        userName: user?.name || 'Anonymous',
+        isTyping: true
+      });
+      
+      // Set timeout to emit typing stop
+      typingTimeout = setTimeout(() => {
+        socketRef.current?.emit('typing', {
+          sessionId: roomId,
+          userId: user?._id,
+          userName: user?.name || 'Anonymous',
+          isTyping: false
+        });
+      }, 1000);
+    }
+    
+    return () => {
+      if (typingTimeout) {
+        clearTimeout(typingTimeout);
+        const roomId = sessionId || `tutor-${tutorId}-${user?._id}`;
+        
+        socketRef.current?.emit('typing', {
+          sessionId: roomId,
+          userId: user?._id,
+          userName: user?.name || 'Anonymous',
+          isTyping: false
+        });
+      }
+    };
+  }, [newMessage, sessionId, tutorId, user]);
 
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (newMessage.trim() === '') return;
 
-    const message = {
-      id: messages.length + 1,
-      sender: 'You',
-      senderId: user?.id || 'you',
-      content: newMessage,
-      timestamp: new Date(),
-      isTutor: false
-    };
+    // Emit the message to the server
+    const roomId = sessionId || `tutor-${tutorId}-${user?._id}`;
+    
+    socketRef.current?.emit('send-message', {
+      sessionId: roomId,
+      userId: user?._id,
+      userName: user?.name || 'Anonymous',
+      content: newMessage
+    });
 
-    setMessages([...messages, message]);
+    // Clear the input
     setNewMessage('');
   };
 
   const formatTime = (timestamp) => {
-    return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  // Determine chat title
+  const getChatTitle = () => {
+    if (sessionTitle) return sessionTitle;
+    if (tutorName) return `Chat with ${tutorName}`;
+    return 'Chat';
   };
 
   // Since we're using side-by-side layout, we don't need to check isOpen
@@ -77,15 +157,19 @@ const Chat = ({ sessionId, sessionTitle, isOpen, onClose }) => {
     <div className="chat-container">
       <div className="chat-header">
         <div className="chat-title">
-          <h3>{sessionTitle || 'Session Chat'}</h3>
-          <p>Session ID: {sessionId || 'JS101'}</p>
+          <h3>{getChatTitle()}</h3>
+          {skillContext && (
+            <p>Skill: {skillContext.skillName}</p>
+          )}
         </div>
         {/* Removed close button since it's side-by-side now */}
       </div>
       
       <div className="chat-session-info">
         <div className="session-details">
-          <span className="session-instructor">Instructor: Alex Johnson</span>
+          <span className="session-instructor">
+            {tutorName ? `Tutor: ${tutorName}` : `Instructor: ${user?.name || 'Instructor'}`}
+          </span>
         </div>
       </div>
       
@@ -93,11 +177,13 @@ const Chat = ({ sessionId, sessionTitle, isOpen, onClose }) => {
         {messages.map((message) => (
           <div 
             key={message.id} 
-            className={`message ${message.senderId === (user?.id || 'you') ? 'sent' : 'received'} ${message.isTutor ? 'tutor' : ''}`}
+            className={`message ${message.userId === user?._id ? 'sent' : 'received'} ${message.system ? 'system' : ''}`}
           >
-            <div className="message-sender">
-              {message.sender} {message.isTutor && <span className="tutor-badge">Tutor</span>}
-            </div>
+            {!message.system && (
+              <div className="message-sender">
+                {message.userName} {message.isTutor && <span className="tutor-badge">Tutor</span>}
+              </div>
+            )}
             <div className="message-content">
               {message.content}
             </div>
@@ -106,6 +192,11 @@ const Chat = ({ sessionId, sessionTitle, isOpen, onClose }) => {
             </div>
           </div>
         ))}
+        {typingUsers.length > 0 && (
+          <div className="typing-indicator">
+            {typingUsers.join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
       

@@ -41,14 +41,14 @@ const Header = () => {
     };
   }, [isMenuOpen]);
 
-  // Navigation items for logged in users (reordered as requested)
+  // Navigation items for logged in users (optimized order)
   const loggedInNavItems = [
     { to: "/", label: "Home" },
     { to: "/dashboard", label: "Dashboard" },
     { to: "/browse", label: "Browse" },
-    { to: "/credits", label: "Credits" },
-    { to: "/messages", label: "Messages" },
-    { to: "/calendar", label: "Calendar" }
+    { to: "/messages", label: "Chat" },
+    { to: "/calendar", label: "Calendar" },
+    { to: "/credits", label: "Credits" }
   ];
 
   // Navigation items for guests

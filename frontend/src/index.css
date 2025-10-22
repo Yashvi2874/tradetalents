@@ -74,6 +74,7 @@ body {
   overflow-x: hidden;
   background-attachment: fixed;
   transition: background 0.3s ease, color 0.3s ease;
+  padding-bottom: 0; /* Remove fixed padding */
 }
 
 /* Global styles for dark theme */
@@ -81,11 +82,29 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  padding-bottom: 0;
 }
 
 main {
   flex: 1;
   padding: 0;
+  margin-bottom: 0;
+}
+
+/* Adjust for mobile devices */
+@media (max-width: 768px) {
+  body {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+  }
+  
+  .App {
+    padding-bottom: 0;
+  }
+  
+  main {
+    margin-bottom: calc(4rem + env(safe-area-inset-bottom));
+    padding: 0 0.5rem; /* Add consistent padding for mobile */
+  }
 }
 
 /* Card styles with 3D effects */
@@ -347,6 +366,10 @@ main {
     padding: 0.6rem 1.2rem;
     font-size: 0.9rem;
   }
+  
+  main {
+    padding: 0 0.25rem; /* Consistent padding for small screens */
+  }
 }
 
 /* Small devices (phones, 576px and up) */
@@ -359,7 +382,7 @@ main {
 /* Medium devices (tablets, 768px and up) */
 @media (min-width: 577px) and (max-width: 768px) {
   main {
-    padding: 0;
+    padding: 0 0.5rem;
   }
   
   .card {

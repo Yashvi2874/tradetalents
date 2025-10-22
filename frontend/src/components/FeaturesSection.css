@@ -46,9 +46,9 @@
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr); /* Changed from 2 to 3 columns */
   gap: 2rem;
-  max-width: 800px;
+  max-width: 1200px; /* Increased max-width to accommodate 3 columns */
   margin: 0 auto;
 }
 
@@ -149,5 +149,13 @@
   
   .feature-card {
     padding: 2rem 1.5rem;
+  }
+}
+
+/* Additional media query for medium screens to ensure proper display */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 columns on medium screens */
+    gap: 1.5rem;
   }
 }

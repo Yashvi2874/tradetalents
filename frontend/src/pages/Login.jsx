@@ -63,7 +63,8 @@ const Login = () => {
     try {
       const result = await login(formData);
       if (result.success) {
-        navigate('/dashboard');
+        // Navigate to dashboard after successful login
+        navigate('/dashboard', { replace: true });
       } else {
         setErrors({ form: result.error || 'Login failed' });
       }

@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Skill = require('../models/Skill');
 
 // @desc    Get user profile
 // @route   GET /api/users/profile
@@ -49,8 +50,9 @@ const updateProfile = async (req, res) => {
 // @access  Private
 const getUserSkills = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).populate('skills');
-    res.json(user.skills);
+    // Get skills where the user is the tutor
+    const skills = await Skill.find({ tutor: req.user._id });
+    res.json(skills);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -61,23 +63,9 @@ const getUserSkills = async (req, res) => {
 // @access  Private
 const addUserSkill = async (req, res) => {
   try {
-    const { skillId } = req.body;
-    
-    const user = await User.findById(req.user._id);
-    
-    if (user) {
-      // Check if skill is already added
-      if (user.skills.includes(skillId)) {
-        return res.status(400).json({ message: 'Skill already added' });
-      }
-      
-      user.skills.push(skillId);
-      await user.save();
-      
-      res.json({ message: 'Skill added successfully' });
-    } else {
-      res.status(404).json({ message: 'User not found' });
-    }
+    // This endpoint is not needed since skills are created directly
+    // Keeping it for backward compatibility
+    res.status(400).json({ message: 'Use POST /api/skills to create skills' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

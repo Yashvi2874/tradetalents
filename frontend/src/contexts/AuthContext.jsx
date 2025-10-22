@@ -16,30 +16,49 @@ export const useAuth = () => {
 // Auth provider component
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Check if user is authenticated on initial load
   useEffect(() => {
-    // Check if there's a user in localStorage
-    const savedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
-    
-    if (savedUser && token) {
+    const initializeAuth = async () => {
+      setLoading(true);
       try {
-        setUser(JSON.parse(savedUser));
+        // Check if there's a user in localStorage
+        const savedUser = localStorage.getItem('user');
+        const token = localStorage.getItem('token');
+        
+        if (savedUser && token) {
+          // Validate token with backend
+          try {
+            const response = await authAPI.getCurrentUser();
+            if (response.data) {
+              setUser(response.data);
+              localStorage.setItem('user', JSON.stringify(response.data));
+            } else {
+              // Token invalid, clear storage
+              localStorage.removeItem('user');
+              localStorage.removeItem('token');
+            }
+          } catch (e) {
+            // Token invalid or network error, clear storage
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+          }
+        }
       } catch (e) {
-        console.error('Error parsing user data:', e);
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
+        console.error('Error initializing auth:', e);
+      } finally {
+        setLoading(false);
       }
-    }
+    };
+
+    initializeAuth();
   }, []);
 
   // Login function - with actual API call
   const login = async (credentials) => {
     try {
-      setLoading(true);
       setError(null);
       
       const response = await authAPI.login(credentials);
@@ -51,7 +70,6 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('user', JSON.stringify(userData));
         localStorage.setItem('token', token);
         
-        setLoading(false);
         return { success: true };
       } else {
         throw new Error('Invalid response from server');
@@ -59,7 +77,6 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       const message = err.response?.data?.message || 'Login failed';
       setError(message);
-      setLoading(false);
       return { success: false, error: message };
     }
   };
@@ -67,7 +84,6 @@ export const AuthProvider = ({ children }) => {
   // Register function - with actual API call
   const register = async (userData) => {
     try {
-      setLoading(true);
       setError(null);
       
       const response = await authAPI.register(userData);
@@ -79,7 +95,6 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('user', JSON.stringify(userData));
         localStorage.setItem('token', token);
         
-        setLoading(false);
         return { success: true };
       } else {
         throw new Error('Invalid response from server');
@@ -87,7 +102,6 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       const message = err.response?.data?.message || 'Registration failed';
       setError(message);
-      setLoading(false);
       return { success: false, error: message };
     }
   };
@@ -97,6 +111,13 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    
+    // Optional: Call backend logout endpoint
+    try {
+      await authAPI.logout();
+    } catch (e) {
+      console.error('Logout API call failed:', e);
+    }
   };
 
   // Context value

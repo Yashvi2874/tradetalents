@@ -1,265 +1,188 @@
-# TradeTalents 🚀
+# TradeTalents - Skill Exchange Platform
 
-A skill exchange platform built with the MERN stack (MongoDB, Express.js, React, Node.js). This platform allows users to share their skills, learn from others, and participate in skill-based sessions.
+A MERN stack application for exchanging skills and knowledge between users.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/MERN-Stack-blue?style=for-the-badge&logo=javascript" alt="MERN Stack">
-</p>
+## Features
 
-## 🌟 Features
+- User authentication and profile management
+- Skill browsing and searching
+- Real-time messaging with WebSocket
+- Session booking and calendar integration
+- Credit-based system for transactions
+- Responsive design for mobile and desktop
 
-### 🔐 User Management
-- Secure user registration and authentication
-- Comprehensive profile management
-- Credit system for transactions
+## Tech Stack
 
-### 💡 Skill Exchange
-- Browse and search skills by category
-- Create and manage skill sessions
-- Join sessions with other users
-- Rate and review skills
+- **Frontend**: React, Vite, Framer Motion, Socket.IO Client
+- **Backend**: Node.js, Express, MongoDB with Mongoose
+- **Real-time**: Socket.IO for messaging and notifications
+- **Authentication**: JWT tokens
+- **Deployment**: Render
 
-### 💬 Communication
-- Real-time messaging between session participants
-- Session-specific chat rooms
-
----
-
-## 📸 UI Preview
-
-*Dashboard View - Overview of user activities and available sessions*
-![Dashboard Preview](./images/dashboard.png)
-
-*Browse Skills - Discover and search for skills offered by other users*
-![Browse Skills Preview](./images/browse-skills.png)
-
-*Session Chat - Real-time communication between session participants*
-![Chat Preview](./images/chat.png)
-
-## 🛠️ Technology Stack
-
-| Layer | Technologies |
-|-------|-------------|
-| **Frontend** | React 18, React Router v6, Axios, CSS Modules |
-| **Backend** | Node.js, Express.js, MongoDB with Mongoose |
-| **Authentication** | JWT, Bcrypt |
-| **Security** | Helmet, CORS |
-| **Development** | Nodemon, Concurrently, Vite |
-
-## 📁 Project Structure
-
-```
-TradeTalents/
-├── backend/           # Node.js/Express backend API
-│   ├── config/        # Database configuration
-│   ├── controllers/   # Request handlers
-│   ├── middleware/    # Custom middleware
-│   ├── models/        # Mongoose models
-│   ├── routes/        # API routes
-│   └── server.js      # Entry point
-└── frontend/          # React frontend application
-    ├── src/
-    │   ├── components/ # Reusable UI components
-    │   ├── pages/      # Page components
-    │   ├── services/   # API service layer
-    │   └── contexts/   # React contexts
-    └── vite.config.js # Vite configuration
-```
-
----
-
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v14 or higher)
-- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
-- [MongoDB](https://www.mongodb.com/) (local or Atlas)
+- Node.js (v14 or higher)
+- MongoDB Atlas account
+- npm or yarn
 
 ### Installation
 
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   cd TradeTalents
-   ```
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd TradeTalents
+```
 
-2. **Install all dependencies:**
-   ```bash
-   npm run install-all
-   ```
+2. Install frontend dependencies:
+```bash
+cd frontend
+npm install
+```
 
-   Or install manually:
-   ```bash
-   # Install root dependencies
-   npm install
-   
-   # Install backend dependencies
-   cd backend
-   npm install
-   cd ..
-   
-   # Install frontend dependencies
-   cd frontend
-   npm install
-   cd ..
-   ```
+3. Install backend dependencies:
+```bash
+cd ../backend
+npm install
+```
 
----
+### Environment Variables
 
-## ⚙️ Environment Setup
+#### Frontend (.env)
+Create a `.env` file in the frontend directory:
+```
+VITE_API_URL=http://localhost:5000/api
+VITE_BACKEND_URL=http://localhost:5000
+```
 
-### Backend Environment Variables
-
-Create a `.env` file in the `backend/` directory with the following variables:
-
-```env
+#### Backend (.env)
+Create a `.env` file in the backend directory:
+```
+NODE_ENV=development
+PORT=5000
 MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret_key
-PORT=5000
+FRONTEND_URL=http://localhost:5173
 ```
 
-You can use the provided example:
-```bash
-cd backend
-cp .env.example .env
-```
+### Running the Application
 
-### Frontend Environment Variables
+#### Development Mode
 
-The frontend uses Vite, which requires environment variables to be prefixed with `VITE_`. Create a `.env` file in the `frontend/` directory:
-
-```env
-VITE_API_URL=http://localhost:5000/api
-```
-
-You can use the provided example:
-```bash
-cd frontend
-cp .env.example .env
-```
-
----
-
-## ▶️ Running the Application
-
-### Development Mode (Recommended)
-
-To run both frontend and backend concurrently:
-
-From the root directory:
-```bash
-npm run dev
-```
-
-This will start both servers simultaneously:
-- Frontend: http://localhost:5173
-- Backend: http://localhost:5000
-
-### Running Applications Separately
-
-#### Backend Server
+1. Start the backend server:
 ```bash
 cd backend
 npm run dev
 ```
-- Runs on `http://localhost:5000`
-- API endpoints available at `http://localhost:5000/api/`
 
-#### Frontend Server
+2. Start the frontend development server:
 ```bash
 cd frontend
 npm run dev
 ```
-- Runs on `http://localhost:5173` (default Vite port)
-- Automatically proxies API requests to backend
 
-### Production Mode
+#### Production Mode
 
-#### Backend
+1. Build the frontend:
+```bash
+cd frontend
+npm run build
+```
+
+2. Start the backend server:
 ```bash
 cd backend
 npm start
 ```
 
-#### Frontend
-```bash
-cd frontend
-npm run build
+3. Serve the frontend build (using a static server or through the backend)
+
+## Deployment
+
+The application is configured for deployment on Render. The `render.yaml` file contains the deployment configuration.
+
+### Environment Variables for Production
+
+Make sure to set the following environment variables in your Render dashboard:
+
+**Frontend:**
+- VITE_API_URL=https://your-backend-url.onrender.com/api
+- VITE_BACKEND_URL=https://your-backend-url.onrender.com
+
+**Backend:**
+- NODE_ENV=production
+- PORT=5000
+- MONGODB_URI=your_production_mongodb_connection_string
+- JWT_SECRET=your_production_jwt_secret
+- FRONTEND_URL=https://your-frontend-url.onrender.com
+
+## Project Structure
+
 ```
-The built files will be in the `dist/` directory, ready for deployment to any static hosting service (Netlify, Vercel, etc.).
-
-## 🚀 Deployment Instructions
-
-### Deploying to Render.com
-
-1. **Create two services on Render:**
-
-   **Web Service for Backend:**
-   - Name: `tradetalents-backend`
-   - Runtime: Node
-   - Build command: `npm install`
-   - Start command: `npm start`
-   - Root directory: `backend`
-   - Add environment variables:
-     - `MONGODB_URI` = your MongoDB connection string
-     - `JWT_SECRET` = your JWT secret
-     - `PORT` = 5000
-
-   **Static Site for Frontend:**
-   - Name: `tradetalents-frontend`
-   - Runtime: Static Site
-   - Build command: `npm install && npm run build`
-   - Publish directory: `dist`
-   - Root directory: `frontend`
-   - Add environment variables:
-     - `VITE_API_URL` = https://your-backend-service.onrender.com/api
-
-2. **Alternative Single Repository Deployment:**
-   - Build command: `npm install && npm run install-all && npm run build`
-   - Start command: `npm start`
-
-## 🧪 Testing
-
-### Backend Testing
-```bash
-cd backend
-npm test
+TradeTalents/
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── contexts/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   └── utils/
+│   └── ...
+├── backend/
+│   ├── controllers/
+│   ├── models/
+│   ├── routes/
+│   ├── middleware/
+│   └── config/
+└── ...
 ```
 
-### Frontend Testing
-```bash
-cd frontend
-npm test
-```
+## Key Features Implementation
 
----
+### Real-time Messaging
+- Implemented using Socket.IO
+- Supports private messaging between users
+- Typing indicators and online status
 
-## 📦 Deployment
+### Session Booking
+- Users can book sessions for skills
+- Calendar integration for scheduling
+- Real-time updates when sessions are booked
 
-### Frontend
-Build the production-ready frontend:
-```bash
-cd frontend
-npm run build
-```
-The built files will be in the `dist/` directory, ready for deployment to any static hosting service (Netlify, Vercel, etc.).
+### Skill Exchange
+- Users can browse and search skills
+- Credit-based system for transactions
+- Skill details and tutor information
 
-### Backend
-Deploy to any Node.js hosting service (Heroku, DigitalOcean, AWS, etc.) with the proper environment variables set.
+## Troubleshooting
 
----
+### MongoDB Connection Issues
+1. Ensure your IP address is whitelisted in MongoDB Atlas
+2. Check your connection string format
+3. Verify your MongoDB credentials
 
-## 🤝 Contributing
+### CORS Issues
+1. Check the FRONTEND_URL environment variable
+2. Ensure the allowed origins are correctly configured in the backend
 
-We welcome contributions to TradeTalents! Here's how you can contribute:
+### Authentication Issues
+1. Verify JWT_SECRET is set correctly
+2. Check token expiration settings
+3. Ensure proper token handling in frontend
+
+## Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+5. Open a pull request
 
----
+## License
 
-<p align="center">Made with ❤️ by the TradeTalents Team</p>
+This project is licensed under the MIT License.
+
+## Contact
+
+For support or questions, please open an issue in the repository.

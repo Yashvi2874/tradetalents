@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "build": "cd ../frontend && npm run build",
     "test": "node test-api-endpoints.js",
     "test-connection": "node test-mongodb-connection.js",
     "test-api": "node test-api-endpoints.js",
@@ -29,7 +30,8 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.2",
-    "morgan": "^1.10.1"
+    "morgan": "^1.10.1",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",

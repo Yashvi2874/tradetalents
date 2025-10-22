@@ -8,7 +8,9 @@
     "start": "node backend/server.js",
     "build": "npm run build --prefix frontend",
     "test": "concurrently \"npm test --prefix backend\" \"npm test --prefix frontend\"",
-    "install-all": "npm install && npm install --prefix backend && npm install --prefix frontend"
+    "install-all": "npm install && npm install --prefix backend && npm install --prefix frontend",
+    "dev:local": "concurrently \"npm run dev --prefix backend\" \"npm run dev:local --prefix frontend\"",
+    "build:prod": "npm run build --prefix frontend"
   },
   "keywords": [
     "mern",

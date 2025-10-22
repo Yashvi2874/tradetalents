@@ -6,6 +6,7 @@ import './ProtectedRoute.css';
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
+  // Show loading state while checking authentication
   if (loading) {
     return (
       <div className="loading-container">
@@ -16,7 +17,11 @@ const ProtectedRoute = ({ children }) => {
   }
 
   // Redirect to login if not authenticated
-  return isAuthenticated ? children : <Navigate to="/login" />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
 };
 
 export default ProtectedRoute;

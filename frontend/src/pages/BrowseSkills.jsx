@@ -1,106 +1,166 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
+import { skillAPI } from '../services/skillService';
+import { sessionAPI } from '../services/sessionService';
+import io from 'socket.io-client';
 import './BrowseSkills.css';
 
 const BrowseSkills = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('popular');
-
-  const skills = [
-    {
-      id: 1,
-      name: 'JavaScript Fundamentals',
-      category: 'Programming',
-      tutor: 'Alex Johnson',
-      rating: 4.8,
-      students: 1240,
-      price: 25,
-      level: 'Beginner',
-      description: 'Learn the basics of JavaScript including variables, functions, and DOM manipulation.',
-      tags: ['Web Development', 'Frontend', 'JavaScript']
-    },
-    {
-      id: 2,
-      name: 'Python for Data Science',
-      category: 'Data Science',
-      tutor: 'Sarah Miller',
-      rating: 4.9,
-      students: 890,
-      price: 40,
-      level: 'Intermediate',
-      description: 'Introduction to data analysis with Python using pandas and numpy libraries.',
-      tags: ['Python', 'Data Analysis', 'Machine Learning']
-    },
-    {
-      id: 3,
-      name: 'UI/UX Design Principles',
-      category: 'Design',
-      tutor: 'Emma Wilson',
-      rating: 4.7,
-      students: 650,
-      price: 30,
-      level: 'Beginner',
-      description: 'Fundamental principles of user interface and user experience design.',
-      tags: ['Figma', 'Design Thinking', 'Prototyping']
-    },
-    {
-      id: 4,
-      name: 'Advanced React Patterns',
-      category: 'Programming',
-      tutor: 'Michael Chen',
-      rating: 4.9,
-      students: 720,
-      price: 35,
-      level: 'Advanced',
-      description: 'Learn advanced React patterns and best practices for building scalable applications.',
-      tags: ['React', 'Frontend', 'State Management']
-    },
-    {
-      id: 5,
-      name: 'Digital Marketing Strategy',
-      category: 'Business',
-      tutor: 'David Brown',
-      rating: 4.6,
-      students: 540,
-      price: 28,
-      level: 'Intermediate',
-      description: 'Comprehensive guide to creating and executing digital marketing campaigns.',
-      tags: ['SEO', 'Social Media', 'Analytics']
-    },
-    {
-      id: 6,
-      name: 'Photography Basics',
-      category: 'Creative',
-      tutor: 'Lisa Garcia',
-      rating: 4.8,
-      students: 420,
-      price: 22,
-      level: 'Beginner',
-      description: 'Learn the fundamentals of photography including composition and lighting.',
-      tags: ['Camera', 'Composition', 'Lighting']
-    }
-  ];
+  const [skills, setSkills] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [socket, setSocket] = useState(null);
 
   const categories = ['all', 'Programming', 'Data Science', 'Design', 'Business', 'Creative'];
 
-  const filteredSkills = skills
-    .filter(skill => {
-      const matchesSearch = skill.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          skill.tutor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          skill.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-      const matchesCategory = selectedCategory === 'all' || skill.category === selectedCategory;
-      return matchesSearch && matchesCategory;
-    })
-    .sort((a, b) => {
-      if (sortBy === 'popular') return b.students - a.students;
-      if (sortBy === 'rating') return b.rating - a.rating;
-      if (sortBy === 'price-low') return a.price - b.price;
-      if (sortBy === 'price-high') return b.price - a.price;
-      return 0;
+  // Initialize WebSocket connection
+  useEffect(() => {
+    // Use import.meta.env for Vite applications instead of process.env
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+    const newSocket = io(backendUrl);
+    setSocket(newSocket);
+
+    return () => {
+      if (newSocket) {
+        newSocket.disconnect();
+      }
+    };
+  }, []);
+
+  // Fetch skills from backend
+  useEffect(() => {
+    const fetchSkills = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const params = {};
+        if (selectedCategory && selectedCategory !== 'all') {
+          params.category = selectedCategory;
+        }
+        if (searchTerm) {
+          params.search = searchTerm;
+        }
+        if (sortBy) {
+          params.sortBy = sortBy;
+        }
+        
+        const response = await skillAPI.getAllSkills(params);
+        setSkills(response.data);
+      } catch (err) {
+        console.error('Error fetching skills:', err);
+        setError('Failed to load skills. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSkills();
+  }, [searchTerm, selectedCategory, sortBy]);
+
+  // Handle search
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  // Handle category change
+  const handleCategoryChange = (e) => {
+    setSelectedCategory(e.target.value);
+  };
+
+  // Handle sort change
+  const handleSortChange = (e) => {
+    setSortBy(e.target.value);
+  };
+
+  // Handle view details - navigate to skill details page
+  const handleViewDetails = (skillId) => {
+    navigate(`/skills/${skillId}`);
+  };
+
+  // Handle book session with real-time calendar update
+  const handleBookSession = async (skill) => {
+    try {
+      // Create a session for this skill
+      const sessionData = {
+        title: `Session for ${skill.name}`,
+        description: `Learning session for ${skill.name}`,
+        startTime: new Date(Date.now() + 86400000), // Tomorrow
+        endTime: new Date(Date.now() + 86400000 + 3600000), // 1 hour session
+        price: skill.price,
+        maxStudents: 10,
+        skillId: skill._id
+      };
+      
+      const response = await sessionAPI.createSession(sessionData);
+      
+      if (response.data) {
+        // Emit real-time update to calendar
+        if (socket) {
+          socket.emit('session-created', {
+            session: response.data,
+            userId: user._id
+          });
+        }
+        
+        // Navigate to calendar to see the new session
+        alert(`Session booked successfully for ${skill.name}! Check your calendar.`);
+        navigate('/calendar');
+      }
+    } catch (err) {
+      console.error('Error booking session:', err);
+      alert('Failed to book session. Please try again.');
+    }
+  };
+
+  // Handle chat with tutor - navigate to chat with tutor context
+  const handleChatWithTutor = (skill) => {
+    // Navigate to messages with tutor context
+    navigate('/messages', { 
+      state: { 
+        tutorId: skill.tutor?._id,
+        tutorName: skill.tutor?.name,
+        skillId: skill._id,
+        skillName: skill.name
+      } 
     });
+  };
+
+  if (loading) {
+    return (
+      <div className="browse-skills">
+        <div className="browse-skills-container">
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading skills...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="browse-skills">
+        <div className="browse-skills-container">
+          <div className="error-container">
+            <h3>Error Loading Skills</h3>
+            <p>{error}</p>
+            <button className="btn btn-primary" onClick={() => window.location.reload()}>
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="browse-skills">
@@ -131,7 +191,7 @@ const BrowseSkills = () => {
               type="text"
               placeholder="Search skills, tutors, or tags..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearch}
               className="search-input"
             />
           </div>
@@ -139,7 +199,7 @@ const BrowseSkills = () => {
           <div className="category-filter">
             <select 
               value={selectedCategory} 
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              onChange={handleCategoryChange}
               className="category-select"
             >
               {categories.map(category => (
@@ -153,7 +213,7 @@ const BrowseSkills = () => {
           <div className="sort-filter">
             <select 
               value={sortBy} 
-              onChange={(e) => setSortBy(e.target.value)}
+              onChange={handleSortChange}
               className="sort-select"
             >
               <option value="popular">Most Popular</option>
@@ -170,10 +230,10 @@ const BrowseSkills = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.5 }}
         >
-          {filteredSkills.length > 0 ? (
-            filteredSkills.map((skill, index) => (
+          {skills.length > 0 ? (
+            skills.map((skill, index) => (
               <motion.div
-                key={skill.id}
+                key={skill._id}
                 className="skill-card card glass"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -186,7 +246,7 @@ const BrowseSkills = () => {
                 </div>
                 
                 <div className="skill-meta">
-                  <div className="skill-tutor">by {skill.tutor}</div>
+                  <div className="skill-tutor">by {skill.tutor?.name || 'Unknown Tutor'}</div>
                   <div className="skill-category">{skill.category}</div>
                 </div>
                 
@@ -194,27 +254,46 @@ const BrowseSkills = () => {
                   <span className="rating-stars">
                     {'★'.repeat(Math.floor(skill.rating))}{'☆'.repeat(5 - Math.floor(skill.rating))}
                   </span>
-                  <span className="rating-value">{skill.rating}</span>
+                  <span className="rating-value">{skill.rating.toFixed(1)}</span>
                   <span className="student-count">({skill.students} students)</span>
                 </div>
                 
                 <p className="skill-description">{skill.description}</p>
                 
                 <div className="skill-tags">
-                  {skill.tags.map((tag, index) => (
+                  {skill.tags && skill.tags.map((tag, index) => (
                     <span key={index} className="skill-tag">{tag}</span>
                   ))}
                 </div>
                 
                 <div className="skill-level">
-                  <span className={`level-badge ${skill.level.toLowerCase()}`}>
+                  <span className={`level-badge ${skill.level?.toLowerCase()}`}>
                     {skill.level}
                   </span>
                 </div>
                 
                 <div className="skill-actions">
-                  <button className="btn btn-secondary">View Details</button>
-                  <button className="btn btn-primary">Book Session</button>
+                  <button 
+                    className="btn btn-secondary"
+                    onClick={() => handleViewDetails(skill._id)}
+                  >
+                    View Details
+                  </button>
+                  <button 
+                    className="btn btn-primary"
+                    onClick={() => handleBookSession(skill)}
+                  >
+                    Book Session
+                  </button>
+                </div>
+                
+                <div className="skill-extra-actions">
+                  <button 
+                    className="btn btn-outline"
+                    onClick={() => handleChatWithTutor(skill)}
+                  >
+                    Chat with Tutor
+                  </button>
                 </div>
               </motion.div>
             ))

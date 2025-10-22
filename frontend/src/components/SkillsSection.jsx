@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import './SkillsSection.css';
 
 const SkillsSection = ({ skills, title }) => {
   const getLevelClass = (level) => {
+    if (!level) return '';
+    
     switch(level.toLowerCase()) {
       case 'beginner': return 'level-beginner';
       case 'intermediate': return 'level-intermediate';
@@ -19,7 +21,7 @@ const SkillsSection = ({ skills, title }) => {
         {skills && skills.length > 0 ? (
           skills.map((skill, index) => (
             <motion.div
-              key={index}
+              key={skill._id || index}
               className="skill-card"
               whileHover={{ y: -5 }}
               transition={{ type: "spring", stiffness: 300 }}
@@ -30,6 +32,16 @@ const SkillsSection = ({ skills, title }) => {
                   {skill.level}
                 </span>
               </div>
+              {skill.category && (
+                <div className="skill-category">
+                  {skill.category}
+                </div>
+              )}
+              {skill.price !== undefined && (
+                <div className="skill-price">
+                  {skill.price} credits
+                </div>
+              )}
             </motion.div>
           ))
         ) : (

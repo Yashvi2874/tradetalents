@@ -1,89 +1,105 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useLocation } from 'react-router-dom';
+import { sessionAPI } from '../services/sessionService';
 import Chat from '../components/Chat';
 import './Messages.css';
 
 const Messages = () => {
   const { user } = useAuth();
+  const location = useLocation();
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock conversations data
-  const mockConversations = [
-    {
-      id: 1,
-      sessionId: 'JS101',
-      sessionTitle: 'JavaScript Fundamentals',
-      instructor: {
-        id: 'tutor1',
-        name: 'Alex Johnson',
-        avatar: null
-      },
-      lastMessage: 'See you in the session!',
-      timestamp: new Date(Date.now() - 3600000),
-      unread: 0,
-      type: 'session',
-      startTime: new Date(Date.now() + 86400000), // Tomorrow
-      endTime: new Date(Date.now() + 86400000 + 3600000), // 1 hour session
-      status: 'upcoming'
-    },
-    {
-      id: 2,
-      sessionId: 'PY201',
-      sessionTitle: 'Python for Data Science',
-      instructor: {
-        id: 'tutor2',
-        name: 'Sarah Miller',
-        avatar: null
-      },
-      lastMessage: 'The dataset is ready for download',
-      timestamp: new Date(Date.now() - 86400000),
-      unread: 3,
-      type: 'session',
-      startTime: new Date(Date.now() - 3600000), // 1 hour ago
-      endTime: new Date(Date.now() + 3600000), // Ends in 1 hour
-      status: 'ongoing'
-    },
-    {
-      id: 3,
-      sessionId: 'UI301',
-      sessionTitle: 'UI/UX Design Principles',
-      instructor: {
-        id: 'tutor3',
-        name: 'Emma Wilson',
-        avatar: null
-      },
-      lastMessage: 'Here are the design resources',
-      timestamp: new Date(Date.now() - 172800000),
-      unread: 0,
-      type: 'session',
-      startTime: new Date(Date.now() - 86400000), // Yesterday
-      endTime: new Date(Date.now() - 82800000), // Ended yesterday
-      status: 'completed'
-    }
-  ];
-
+  // Check if we have tutor context from BrowseSkills
   useEffect(() => {
-    // Simulate loading conversations
-    setConversations(mockConversations);
-    if (mockConversations.length > 0) {
-      setSelectedConversation(mockConversations[0]);
+    const tutorContext = location.state;
+    if (tutorContext && tutorContext.tutorId) {
+      // Create a temporary conversation for chatting with the tutor
+      const tempConversation = {
+        id: `temp-${tutorContext.tutorId}`,
+        sessionId: null,
+        sessionTitle: `Chat with ${tutorContext.tutorName}`,
+        instructor: {
+          id: tutorContext.tutorId,
+          name: tutorContext.tutorName,
+          avatar: null
+        },
+        lastMessage: 'Start a conversation with this tutor',
+        timestamp: new Date(),
+        unread: 0,
+        type: 'tutor',
+        skillContext: {
+          skillId: tutorContext.skillId,
+          skillName: tutorContext.skillName
+        }
+      };
+      
+      // Set this as the selected conversation
+      setSelectedConversation(tempConversation);
     }
+  }, [location.state]);
+
+  // Fetch real conversations from backend
+  useEffect(() => {
+    const fetchConversations = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await sessionAPI.getAllSessions();
+        
+        // Transform session data to conversation format
+        const conversationData = response.data.map(session => ({
+          id: session._id,
+          sessionId: session._id,
+          sessionTitle: session.title,
+          instructor: {
+            id: session.tutor?._id || 'unknown',
+            name: session.tutor?.name || 'Unknown Tutor',
+            avatar: null
+          },
+          lastMessage: 'Session details updated',
+          timestamp: new Date(session.updatedAt || session.createdAt || Date.now()),
+          unread: 0,
+          type: 'session',
+          startTime: session.startTime,
+          endTime: session.endTime,
+          status: session.status
+        }));
+        
+        setConversations(conversationData);
+        
+        // If no conversation is selected and we have conversations, select the first one
+        if (!selectedConversation && conversationData.length > 0) {
+          setSelectedConversation(conversationData[0]);
+        }
+      } catch (err) {
+        console.error('Error fetching conversations:', err);
+        setError('Failed to load conversations. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchConversations();
   }, []);
 
   const formatTime = (timestamp) => {
     const now = new Date();
-    const diff = now - timestamp;
+    const diff = now - new Date(timestamp);
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     
     if (days === 0) {
-      return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } else if (days === 1) {
       return 'Yesterday';
     } else if (days < 7) {
-      return timestamp.toLocaleDateString([], { weekday: 'short' });
+      return new Date(timestamp).toLocaleDateString([], { weekday: 'short' });
     } else {
-      return timestamp.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      return new Date(timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' });
     }
   };
 
@@ -131,6 +147,31 @@ const Messages = () => {
       default: return '';
     }
   };
+
+  if (loading) {
+    return (
+      <div className="messages-page">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading messages...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="messages-page">
+        <div className="error-container">
+          <h3>Error Loading Messages</h3>
+          <p>{error}</p>
+          <button className="btn primary" onClick={() => window.location.reload()}>
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="messages-page">
@@ -193,6 +234,9 @@ const Messages = () => {
               sessionTitle={selectedConversation.sessionTitle}
               isOpen={true}
               onClose={() => {}}
+              tutorId={selectedConversation.instructor.id}
+              tutorName={selectedConversation.instructor.name}
+              skillContext={selectedConversation.skillContext}
             />
           ) : (
             <div className="no-conversation-selected">

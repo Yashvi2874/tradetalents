@@ -1,5 +1,6 @@
 .home-page {
   width: 100%;
+  max-width: 100%;
 }
 
 /* Hero Section */
@@ -10,6 +11,8 @@
   background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border-primary);
+  width: 100%;
+  max-width: 100%;
 }
 
 .hero-section::before {
@@ -25,7 +28,8 @@
 }
 
 .container {
-  max-width: 1200px;
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
   padding: 0 2rem;
   display: flex;
