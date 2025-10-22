@@ -17,7 +17,7 @@ A MERN stack application for exchanging skills and knowledge between users.
 - **Backend**: Node.js, Express, MongoDB with Mongoose
 - **Real-time**: Socket.IO for messaging and notifications
 - **Authentication**: JWT tokens
-- **Deployment**: Render
+- **Deployment**: Render, vercel
 
 ## Getting Started
 

@@ -52,11 +52,6 @@ app.use(cors(corsOptions));
 app.use(morgan('combined'));
 app.use(express.json());
 
-// Serve static files from the React app build directory in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../frontend/dist')));
-}
-
 // Initialize Socket.IO with proper CORS
 const io = new Server(server, {
   cors: {
@@ -198,13 +193,6 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Serve React frontend in production
-if (process.env.NODE_ENV === 'production') {
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
-  });
-}
-
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -214,7 +202,18 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler
+// Serve React frontend in production - THIS MUST BE AFTER API ROUTES AND BEFORE 404 HANDLER
+if (process.env.NODE_ENV === 'production') {
+  // Serve static files
+  app.use(express.static(path.join(__dirname, '../frontend/dist')));
+  
+  // Handle React routing, return all non-API requests to React app
+  app.get(/^(?!\/api\/).*/, (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
+  });
+}
+
+// 404 handler - THIS MUST BE LAST
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
