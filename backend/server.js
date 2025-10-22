@@ -50,7 +50,25 @@ const corsOptions = {
 app.use(helmet());
 app.use(cors(corsOptions));
 app.use(morgan('combined'));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Serve static files from the React app build directory in production
+if (process.env.NODE_ENV === 'production') {
+  const distPath = path.join(__dirname, '../frontend/dist');
+  
+  // Check if dist directory exists
+  try {
+    const fs = require('fs');
+    if (fs.existsSync(distPath)) {
+      app.use(express.static(distPath));
+    } else {
+      console.warn('Frontend dist directory not found, skipping static file serving');
+    }
+  } catch (err) {
+    console.warn('Error checking frontend dist directory:', err.message);
+  }
+}
 
 // Initialize Socket.IO with proper CORS
 const io = new Server(server, {
@@ -204,13 +222,41 @@ app.use((err, req, res, next) => {
 
 // Serve React frontend in production - THIS MUST BE AFTER API ROUTES AND BEFORE 404 HANDLER
 if (process.env.NODE_ENV === 'production') {
-  // Serve static files
-  app.use(express.static(path.join(__dirname, '../frontend/dist')));
+  // Try multiple possible paths for the dist directory
+  const possiblePaths = [
+    path.join(__dirname, '../frontend/dist'),  // Standard structure
+    path.join(__dirname, '../../frontend/dist'), // If deployed differently
+    path.join(__dirname, 'frontend/dist'),     // Relative to backend
+    path.join(__dirname, 'dist')               // Direct dist folder
+  ];
   
-  // Handle React routing, return all non-API requests to React app
-  app.get(/^(?!\/api\/).*/, (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
-  });
+  let distPath = null;
+  
+  // Find the first existing dist path
+  for (const possiblePath of possiblePaths) {
+    try {
+      const fs = require('fs');
+      if (fs.existsSync(possiblePath)) {
+        distPath = possiblePath;
+        console.log(`Found frontend dist at: ${distPath}`);
+        break;
+      }
+    } catch (err) {
+      // Continue to next path
+    }
+  }
+  
+  if (distPath) {
+    app.use(express.static(distPath));
+    
+    // Handle React routing, return all non-API requests to React app
+    app.get(/^(?!\/api\/).*/, (req, res) => {
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+  } else {
+    console.warn('Frontend dist directory not found in any expected location');
+    console.warn('Checked paths:', possiblePaths);
+  }
 }
 
 // 404 handler - THIS MUST BE LAST

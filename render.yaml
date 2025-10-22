@@ -1,16 +1,4 @@
 services:
-  - type: static
-    name: tradetalents-frontend
-    buildCommand: npm install && npm run build
-    staticPublishDir: frontend/dist
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: VITE_API_URL
-        value: https://tradetalents.onrender.com/api
-      - key: VITE_BACKEND_URL
-        value: https://tradetalents.onrender.com
-
   - type: web
     name: tradetalents-backend
     env: node
@@ -26,4 +14,16 @@ services:
       - key: JWT_SECRET
         value: tradetalents_jwt_secret_key
       - key: FRONTEND_URL
+        value: https://tradetalents.onrender.com
+
+  - type: static
+    name: tradetalents-frontend
+    buildCommand: npm install && npm run build
+    staticPublishDir: dist
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VITE_API_URL
+        value: https://tradetalents.onrender.com/api
+      - key: VITE_BACKEND_URL
         value: https://tradetalents.onrender.com
