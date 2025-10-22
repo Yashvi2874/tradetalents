@@ -34,8 +34,14 @@ const corsOptions = {
       'http://localhost:3000',
       'http://localhost:5000',
       'https://tradetalents.onrender.com',
+      'https://tradetalents.vercel.app', // Add Vercel app URL
       process.env.FRONTEND_URL // Add your frontend URL from environment variables
     ];
+    
+    // In development, allow all origins
+    if (process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    }
     
     if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
       callback(null, true);
@@ -83,8 +89,14 @@ const io = new Server(server, {
         'http://localhost:3000',
         'http://localhost:5000',
         'https://tradetalents.onrender.com',
+        'https://tradetalents.vercel.app', // Add Vercel app URL
         process.env.FRONTEND_URL
       ];
+      
+      // In development, allow all origins
+      if (process.env.NODE_ENV === 'development') {
+        return callback(null, true);
+      }
       
       if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
         callback(null, true);

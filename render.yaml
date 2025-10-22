@@ -14,7 +14,7 @@ services:
       - key: JWT_SECRET
         value: tradetalents_jwt_secret_key
       - key: FRONTEND_URL
-        value: https://tradetalents.onrender.com
+        value: https://tradetalents.vercel.app
 
   - type: static
     name: tradetalents-frontend
