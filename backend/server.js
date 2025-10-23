@@ -33,8 +33,8 @@ const corsOptions = {
       'http://localhost:5173',
       'http://localhost:3000',
       'http://localhost:5000',
-      'https://tradetalents.onrender.com',
-      'https://tradetalents.vercel.app', // Add Vercel app URL
+      'https://tradetalents.vercel.app',
+      /\.vercel\.app$/, // Allow all Vercel deployments
       process.env.FRONTEND_URL // Add your frontend URL from environment variables
     ];
     
@@ -43,7 +43,21 @@ const corsOptions = {
       return callback(null, true);
     }
     
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+    // Check if origin is in allowed list or matches Vercel pattern
+    let isAllowed = false;
+    for (const allowedOrigin of allowedOrigins) {
+      if (allowedOrigin instanceof RegExp) {
+        if (allowedOrigin.test(origin)) {
+          isAllowed = true;
+          break;
+        }
+      } else if (allowedOrigin === origin) {
+        isAllowed = true;
+        break;
+      }
+    }
+    
+    if (isAllowed || !origin) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -88,8 +102,8 @@ const io = new Server(server, {
         'http://localhost:5173',
         'http://localhost:3000',
         'http://localhost:5000',
-        'https://tradetalents.onrender.com',
-        'https://tradetalents.vercel.app', // Add Vercel app URL
+        'https://tradetalents.vercel.app',
+        /\.vercel\.app$/, // Allow all Vercel deployments
         process.env.FRONTEND_URL
       ];
       
@@ -98,7 +112,21 @@ const io = new Server(server, {
         return callback(null, true);
       }
       
-      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      // Check if origin is in allowed list or matches Vercel pattern
+      let isAllowed = false;
+      for (const allowedOrigin of allowedOrigins) {
+        if (allowedOrigin instanceof RegExp) {
+          if (allowedOrigin.test(origin)) {
+            isAllowed = true;
+            break;
+          }
+        } else if (allowedOrigin === origin) {
+          isAllowed = true;
+          break;
+        }
+      }
+      
+      if (isAllowed || !origin) {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'));
