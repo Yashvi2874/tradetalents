@@ -11,6 +11,20 @@ A MERN stack application for exchanging skills and knowledge between users.
 - Credit-based system for transactions
 - Responsive design for mobile and desktop
 
+## UI Screenshots
+
+### Dashboard
+![Dashboard](images/dashboard.png)
+*User dashboard with quick stats and actions*
+
+### Skill Browsing
+![Browse Skills](images/browse-skills.png)
+*Browse and search available skills*
+
+### Messaging
+![Chat](images/chat.png)
+*Real-time messaging interface*
+
 ## Tech Stack
 
 - **Frontend**: React, Vite, Framer Motion, Socket.IO Client
