@@ -46,18 +46,18 @@ api.interceptors.response.use(
 
 // Auth endpoints
 export const authAPI = {
-  login: (data) => api.post('/login', data),
-  register: (data) => api.post('/register', data),
-  logout: () => api.post('/logout'),
-  getCurrentUser: () => api.get('/me'),
+  login: (data) => api.post('/auth/login', data),
+  register: (data) => api.post('/auth/register', data),
+  logout: () => api.post('/auth/logout'),
+  getCurrentUser: () => api.get('/auth/me'),
 };
 
 // User endpoints
 export const userAPI = {
-  getProfile: () => api.get('/profile'),
-  updateProfile: (data) => api.put('/profile', data),
-  getSkills: () => api.get('/skills'),
-  addSkill: (data) => api.post('/skills', data),
+  getProfile: () => api.get('/users/profile'),
+  updateProfile: (data) => api.put('/users/profile', data),
+  getSkills: () => api.get('/users/skills'),
+  addSkill: (data) => api.post('/users/skills', data),
 };
 
 // Session endpoints
