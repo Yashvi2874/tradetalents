@@ -30,38 +30,39 @@ const HowItWorks = () => {
   ];
 
   return (
-    <section className="how-it-works py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900">
-      <div className="container mx-auto px-4">
-        <div className="section-header text-center mb-16" data-aos="fade-up" data-aos-delay="50">
-          <h2 className="section-title text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-white">
-            How It Works
-          </h2>
-          <p className="section-subtitle text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Start your peer-learning journey in just a few simple steps
-          </p>
-        </div>
-        <div className="steps-container">
-          <div className="steps grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {steps.map((step, index) => (
-              <div
-                key={index}
-                className="step bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-xl"
-                data-aos="flip-up"
-                data-aos-delay={String(100 * (index + 1))}
-              >
-                <div className="step-number flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-2xl font-bold mb-4">
-                  {step.icon}
+    <section className="how-it-works py-20">
+      <div className="container mx-auto px-4 max-w-6xl">
+        <div className="how-it-works-content flex flex-col lg:flex-row items-center gap-16">
+          <div className="section-header text-center lg:text-left lg:w-2/5">
+            <h2 className="section-title text-3xl md:text-4xl font-bold mb-6">
+              How It Works
+            </h2>
+            <p className="section-subtitle text-lg text-gray-600 dark:text-gray-300 mx-auto lg:mx-0 max-w-md">
+              Start your peer-learning journey in just a few simple steps
+            </p>
+          </div>
+          
+          <div className="steps-container lg:w-3/5">
+            <div className="steps grid grid-cols-1 md:grid-cols-2 gap-8">
+              {steps.map((step, index) => (
+                <div
+                  key={index}
+                  className="step flex flex-col items-center text-center h-full"
+                >
+                  <div className="step-number w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white flex items-center justify-center text-xl font-bold mb-6 shadow-lg">
+                    {step.icon}
+                  </div>
+                  <div className="step-content w-full">
+                    <h3 className="step-title text-xl font-bold mb-3">
+                      {step.title}
+                    </h3>
+                    <p className="step-description text-gray-600 dark:text-gray-400">
+                      {step.description}
+                    </p>
+                  </div>
                 </div>
-                <div className="step-content">
-                  <h3 className="step-title text-xl font-bold mb-2 text-gray-900 dark:text-white">
-                    {step.title}
-                  </h3>
-                  <p className="step-description text-gray-600 dark:text-gray-300">
-                    {step.description}
-                  </p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>

@@ -22,28 +22,28 @@ const Home = () => {
       <HowItWorks />
 
       {/* CTA Section */}
-      <section className="cta-section py-20 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900">
-        <div className="container mx-auto px-4">
+      <section className="cta-section py-24 mt-20 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900">
+        <div className="container mx-auto px-4 max-w-4xl">
           <Sparkles 
-            className="cta-content text-center max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl"
+            className="cta-content text-center max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-2xl p-12 shadow-xl"
             minSize={0.5}
             maxSize={1.5}
             particleDensity={50}
             particleColor="#3b82f6"
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-white">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900 dark:text-white">
               Ready to Start Your Learning Journey?
             </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
+            <p className="text-lg text-gray-600 dark:text-gray-300 mb-10 max-w-2xl mx-auto">
               Join thousands of university students who are already exchanging skills and knowledge.
             </p>
             {user ? (
-              <Link to="/browse" className="btn primary btn-lg px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-300 transform hover:scale-105">
+              <Link to="/browse" className="btn primary btn-lg px-10 py-5 text-lg font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 inline-block">
                 Browse Skills
               </Link>
             ) : (
-              <Link to="/register" className="btn primary btn-lg px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-300 transform hover:scale-105">
-                Join Now - It's Free
+              <Link to="/register" className="btn primary btn-lg px-10 py-5 text-lg font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 inline-block">
+                Join Now – It's Free
               </Link>
             )}
           </Sparkles>

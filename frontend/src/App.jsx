@@ -50,7 +50,7 @@ function App() {
       {isMobile ? (
         <>
           <MobileHeader />
-          <main>
+          <main id="main">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
@@ -108,7 +108,7 @@ function App() {
       ) : (
         <>
           <Header />
-          <main>
+          <main id="main">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
