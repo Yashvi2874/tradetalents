@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import App from './App'
 import './index.css'
+import './styles/auth.css'
 
 // Initialize AOS animations
 import AOS from 'aos'

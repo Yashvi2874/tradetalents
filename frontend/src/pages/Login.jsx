@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import './Auth.css';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +13,21 @@ const Login = () => {
   
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  // Update aria-invalid attributes based on errors
+  useEffect(() => {
+    const fields = ['email', 'password'];
+    fields.forEach(fieldName => {
+      const inputEl = document.getElementById(fieldName);
+      if (inputEl) {
+        if (errors[fieldName]) {
+          inputEl.setAttribute('aria-invalid', 'true');
+        } else {
+          inputEl.removeAttribute('aria-invalid');
+        }
+      }
+    });
+  }, [errors]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -76,62 +90,69 @@ const Login = () => {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-container">
-        <div className="auth-form card">
-          <h2>Login to Your Account</h2>
-          {errors.form && (
-            <div className="error-message">
-              {errors.form}
-            </div>
-          )}
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className={errors.email ? 'error' : ''}
-                placeholder="Enter your email"
-              />
-              {errors.email && <span className="error-text">{errors.email}</span>}
-            </div>
-            <div className="form-group">
-              <label htmlFor="password">Password</label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className={errors.password ? 'error' : ''}
-                placeholder="Enter your password"
-              />
-              {errors.password && <span className="error-text">{errors.password}</span>}
-            </div>
-            <button 
-              type="submit" 
-              className="btn primary full-width"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Logging in...' : 'Login'}
-            </button>
-          </form>
-          
-          <div className="auth-links">
-            <p>
-              Don't have an account? <Link to="/register">Register here</Link>
-            </p>
-            <p>
-              <Link to="/">Back to Home</Link>
-            </p>
+    <section
+      className="page-auth"
+      onMouseMove={(e) => {
+        const card = e.currentTarget.querySelector('.auth-card');
+        if (!card) return;
+        const r = card.getBoundingClientRect();
+        card.style.setProperty('--mx', `${Math.min(Math.max(e.clientX - r.left, 0), r.width)}px`);
+        card.style.setProperty('--my', `${Math.min(Math.max(e.clientY - r.top, 0), r.height)}px`);
+      }}
+    >
+      <div className="bg-blob blob-1" />
+      <div className="bg-blob blob-2" />
+
+      <div className="auth-card">
+        <h1 className="auth-title">Login to Your Account</h1>
+        <div className="auth-underline"></div>
+
+        {errors.form && (
+          <div className="auth-error-form">
+            {errors.form}
           </div>
+        )}
+
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <label className="auth-label" htmlFor="email">Email</label>
+          <input
+            className={`auth-input ${errors.email ? 'error' : ''}`}
+            id="email"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="Enter your email"
+            aria-invalid={errors.email ? 'true' : 'false'}
+            required
+          />
+          {errors.email && <span className="auth-error-field">{errors.email}</span>}
+
+          <label className="auth-label" htmlFor="password">Password</label>
+          <input
+            className={`auth-input ${errors.password ? 'error' : ''}`}
+            id="password"
+            name="password"
+            type="password"
+            value={formData.password}
+            onChange={handleChange}
+            placeholder="Enter your password"
+            aria-invalid={errors.password ? 'true' : 'false'}
+            required
+          />
+          {errors.password && <span className="auth-error-field">{errors.password}</span>}
+
+          <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+            {isSubmitting ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+
+        <div className="auth-foot">
+          Don't have an account? <Link className="auth-link" to="/register">Register here</Link><br/>
+          <Link className="auth-link" to="/">Back to Home</Link>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
