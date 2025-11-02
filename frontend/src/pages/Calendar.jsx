@@ -198,36 +198,41 @@ const Calendar = () => {
           transition={{ duration: 0.5 }}
         >
           <div className="calendar-header">
-            <div className="calendar-nav">
-              <motion.button 
-                onClick={() => navigateMonth(-1)} 
-                className="nav-btn"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                &#8249;
-              </motion.button>
-              <h2 className="calendar-title">
-                {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-              </h2>
-              <motion.button 
-                onClick={() => navigateMonth(1)} 
-                className="nav-btn"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                &#8250;
-              </motion.button>
-            </div>
+          <div className="calendar-nav">
             <motion.button 
-              onClick={navigateToToday} 
-              className="today-btn"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              onClick={() => navigateMonth(-1)} 
+              className="nav-btn"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
             >
-              Today
+              &#8249;
+            </motion.button>
+
+            <h2 className="calendar-title">
+              {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+            </h2>
+
+            <motion.button 
+              onClick={() => navigateMonth(1)} 
+              className="nav-btn"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              &#8250;
             </motion.button>
           </div>
+
+          <motion.button 
+            onClick={navigateToToday} 
+            className="today-btn"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Today
+          </motion.button>
+        </div>
+
+
 
           <div className="calendar-grid">
             <div className="calendar-header-row">

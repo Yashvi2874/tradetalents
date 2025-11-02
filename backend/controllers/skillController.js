@@ -76,7 +76,18 @@ const getSkillById = async (req, res) => {
 // @access  Private (Tutors only)
 const createSkill = async (req, res) => {
   try {
-    const { name, category, description, level, tags, price } = req.body;
+    const { 
+      name, 
+      category, 
+      description, 
+      level, 
+      tags, 
+      price,
+      duration,
+      prerequisites,
+      learningOutcomes,
+      thumbnail
+    } = req.body;
     
     // Only tutors can create skills
     if (req.user.role !== 'tutor' && req.user.role !== 'admin') {
@@ -91,6 +102,10 @@ const createSkill = async (req, res) => {
       tags,
       tutor: req.user._id,
       price,
+      duration,
+      prerequisites,
+      learningOutcomes,
+      thumbnail
     });
     
     const createdSkill = await skill.save();
@@ -109,7 +124,19 @@ const createSkill = async (req, res) => {
 // @access  Private (Tutors only)
 const updateSkill = async (req, res) => {
   try {
-    const { name, category, description, level, tags, price } = req.body;
+    const { 
+      name, 
+      category, 
+      description, 
+      level, 
+      tags, 
+      price,
+      duration,
+      prerequisites,
+      learningOutcomes,
+      thumbnail,
+      isFeatured
+    } = req.body;
     
     const skill = await Skill.findById(req.params.id);
     
@@ -125,6 +152,13 @@ const updateSkill = async (req, res) => {
       skill.level = level || skill.level;
       skill.tags = tags || skill.tags;
       skill.price = price || skill.price;
+      skill.duration = duration || skill.duration;
+      skill.prerequisites = prerequisites || skill.prerequisites;
+      skill.learningOutcomes = learningOutcomes || skill.learningOutcomes;
+      skill.thumbnail = thumbnail || skill.thumbnail;
+      if (req.user.role === 'admin') {
+        skill.isFeatured = isFeatured !== undefined ? isFeatured : skill.isFeatured;
+      }
       
       const updatedSkill = await skill.save();
       

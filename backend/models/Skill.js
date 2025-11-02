@@ -44,6 +44,26 @@ const skillSchema = new mongoose.Schema({
     type: Number,
     required: true,
     min: 0
+  },
+  // Enhanced fields for course-like features
+  duration: {
+    type: Number, // Duration in hours
+    default: 1
+  },
+  prerequisites: [{
+    type: String,
+    trim: true
+  }],
+  learningOutcomes: [{
+    type: String,
+    trim: true
+  }],
+  thumbnail: {
+    type: String // URL to thumbnail image
+  },
+  isFeatured: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true
