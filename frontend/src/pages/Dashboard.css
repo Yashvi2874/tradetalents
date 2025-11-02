@@ -172,19 +172,28 @@
 
 .section-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center; /* center the heading text */
   align-items: center;
+  position: relative;
   margin-bottom: 2rem;
+  min-height: 3rem; /* ensures equal vertical space */
 }
 
 .section-header h2 {
   font-size: 1.75rem;
   color: var(--text-primary);
-  margin: 0;
   font-weight: 700;
+  margin: 0 auto;
+  text-align: center;
+  flex: 1; /* ensures heading stays centered even with absolute button */
 }
 
+/* Keep the button to the right */
 .view-all-btn {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%); /* vertically centers it */
   background: transparent;
   border: 1px solid var(--border-secondary);
   color: var(--text-secondary);
@@ -201,6 +210,7 @@
   border-color: var(--border-tertiary);
   color: var(--text-primary);
 }
+
 
 /* Loading and Error States */
 .loading-container, .error-container {

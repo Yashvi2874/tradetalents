@@ -13,6 +13,15 @@ const Calendar = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [socket, setSocket] = useState(null);
+  const [showBookingForm, setShowBookingForm] = useState(false);
+  const [bookingData, setBookingData] = useState({
+    title: '',
+    description: '',
+    date: '',
+    time: '',
+    duration: 60,
+    price: 10
+  });
 
   // Initialize WebSocket connection
   useEffect(() => {
@@ -50,7 +59,7 @@ const Calendar = () => {
         tutor: session.tutor?.name || 'Unknown Tutor',
         date: new Date(session.startTime).toISOString().split('T')[0],
         time: new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        duration: '1 hour', // This could be calculated from start/end times
+        duration: Math.round((new Date(session.endTime) - new Date(session.startTime)) / (1000 * 60)), // in minutes
         price: session.price,
         description: session.description,
         status: session.status
@@ -159,6 +168,100 @@ const Calendar = () => {
     });
   };
 
+  // Handle booking form input changes
+  const handleBookingInputChange = (e) => {
+    const { name, value } = e.target;
+    setBookingData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Handle booking form submission
+  const handleBookingSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      // Combine date and time for startTime
+      const startTime = new Date(`${bookingData.date}T${bookingData.time}`);
+      const endTime = new Date(startTime.getTime() + bookingData.duration * 60000); // Add duration in milliseconds
+      
+      // Validate that we have all required data
+      if (!bookingData.title || !bookingData.description || !bookingData.date || !bookingData.time) {
+        alert('Please fill in all required fields');
+        return;
+      }
+      
+      // Validate that endTime is after startTime
+      if (startTime >= endTime) {
+        alert('End time must be after start time');
+        return;
+      }
+      
+      const sessionData = {
+        title: bookingData.title,
+        description: bookingData.description,
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString(),
+        price: parseInt(bookingData.price) || 10,
+        maxStudents: 10
+      };
+      
+      console.log('Sending session data:', sessionData);
+      
+      // Create session
+      const response = await sessionAPI.createSession(sessionData);
+      
+      // Emit event to update calendar for other users
+      if (socket) {
+        socket.emit('session-created', {
+          session: { ...sessionData, _id: Date.now() }, // Mock ID for real-time update
+          userId: user._id
+        });
+      }
+      
+      // Refresh sessions
+      fetchSessions();
+      
+      // Close form and reset
+      setShowBookingForm(false);
+      setBookingData({
+        title: '',
+        description: '',
+        date: '',
+        time: '',
+        duration: 60,
+        price: 10
+      });
+      
+      // Show success message
+      alert('Session booked successfully!');
+    } catch (err) {
+      console.error('Error booking session:', err);
+      let errorMessage = 'Failed to book session. Please try again.';
+      
+      // Try to get more specific error message
+      if (err.response && err.response.data && err.response.data.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      alert(`Error: ${errorMessage}`);
+    }
+  };
+
+  // Handle book session button click
+  const handleBookSessionClick = () => {
+    // Pre-fill the date with the selected date
+    const formattedDate = formatDateForComparison(selectedDate);
+    setBookingData(prev => ({
+      ...prev,
+      date: formattedDate
+    }));
+    setShowBookingForm(true);
+  };
+
   if (loading) {
     return (
       <div className="calendar-page">
@@ -198,41 +301,39 @@ const Calendar = () => {
           transition={{ duration: 0.5 }}
         >
           <div className="calendar-header">
-          <div className="calendar-nav">
-            <motion.button 
-              onClick={() => navigateMonth(-1)} 
-              className="nav-btn"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              &#8249;
-            </motion.button>
+            <div className="calendar-nav">
+              <motion.button 
+                onClick={() => navigateMonth(-1)} 
+                className="nav-btn"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                &#8249;
+              </motion.button>
 
-            <h2 className="calendar-title">
-              {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-            </h2>
+              <h2 className="calendar-title">
+                {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+              </h2>
+
+              <motion.button 
+                onClick={() => navigateMonth(1)} 
+                className="nav-btn"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                &#8250;
+              </motion.button>
+            </div>
 
             <motion.button 
-              onClick={() => navigateMonth(1)} 
-              className="nav-btn"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+              onClick={navigateToToday} 
+              className="today-btn"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              &#8250;
+              Today
             </motion.button>
           </div>
-
-          <motion.button 
-            onClick={navigateToToday} 
-            className="today-btn"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Today
-          </motion.button>
-        </div>
-
-
 
           <div className="calendar-grid">
             <div className="calendar-header-row">
@@ -260,62 +361,164 @@ const Calendar = () => {
             </h3>
           </div>
           
-          <div className="sessions-list">
-            {getSelectedDateSessions().length > 0 ? (
-              getSelectedDateSessions().map((session, index) => (
-                <motion.div 
-                  key={session.id} 
-                  className="session-card"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * index, duration: 0.5 }}
-                  whileHover={{ y: -5, boxShadow: '0 10px 25px rgba(0, 0, 0, 0.3)' }}
-                >
-                  <div className="session-header">
-                    <h4 className="session-title">{session.title}</h4>
-                    <div className="session-price">{session.price} credits</div>
+          {/* Booking Form */}
+          {showBookingForm ? (
+            <div className="booking-form">
+              <h3>Book New Session</h3>
+              <form onSubmit={handleBookingSubmit}>
+                <div className="form-group">
+                  <label>Title:</label>
+                  <input
+                    type="text"
+                    name="title"
+                    value={bookingData.title}
+                    onChange={handleBookingInputChange}
+                    required
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>Description:</label>
+                  <textarea
+                    name="description"
+                    value={bookingData.description}
+                    onChange={handleBookingInputChange}
+                    required
+                  />
+                </div>
+                
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Date:</label>
+                    <input
+                      type="date"
+                      name="date"
+                      value={bookingData.date}
+                      onChange={handleBookingInputChange}
+                      required
+                    />
                   </div>
-                  <div className="session-details">
-                    <div className="session-detail">
-                      <span className="label">👨‍🏫 Tutor:</span> {session.tutor}
-                    </div>
-                    <div className="session-detail">
-                      <span className="label">🕐 Time:</span> {session.time}
-                    </div>
-                    <div className="session-detail">
-                      <span className="label">⏱️ Duration:</span> {session.duration}
-                    </div>
-                    {session.status && (
-                      <div className="session-detail">
-                        <span className="label">📊 Status:</span> 
-                        <span className={`status-badge status-${session.status}`}>
-                          {session.status}
-                        </span>
-                      </div>
-                    )}
+                  
+                  <div className="form-group">
+                    <label>Time:</label>
+                    <input
+                      type="time"
+                      name="time"
+                      value={bookingData.time}
+                      onChange={handleBookingInputChange}
+                      required
+                    />
                   </div>
-                  <div className="session-description">
-                    {session.description}
-                  </div>
-                  <div className="session-actions">
-                    <motion.button 
-                      className="btn primary"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                </div>
+                
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Duration (minutes):</label>
+                    <select
+                      name="duration"
+                      value={bookingData.duration}
+                      onChange={handleBookingInputChange}
                     >
-                      Book Session
-                    </motion.button>
+                      <option value={30}>30 minutes</option>
+                      <option value={60}>1 hour</option>
+                      <option value={90}>1.5 hours</option>
+                      <option value={120}>2 hours</option>
+                    </select>
                   </div>
-                </motion.div>
-              ))
-            ) : (
-              <div className="no-sessions">
-                <div className="no-sessions-icon">📅</div>
-                <p>No sessions scheduled for this date</p>
-                <p className="no-sessions-hint">Try selecting a different date to see available sessions</p>
+                  
+                  <div className="form-group">
+                    <label>Price (credits):</label>
+                    <input
+                      type="number"
+                      name="price"
+                      value={bookingData.price}
+                      onChange={handleBookingInputChange}
+                      min="1"
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div className="form-actions">
+                  <button type="button" className="btn secondary" onClick={() => setShowBookingForm(false)}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn primary">
+                    Book Session
+                  </button>
+                </div>
+              </form>
+            </div>
+          ) : (
+            <div className="sessions-list">
+              <div className="session-actions" style={{ marginBottom: '1rem' }}>
+                <motion.button 
+                  className="btn primary"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleBookSessionClick}
+                >
+                  + Book New Session
+                </motion.button>
               </div>
-            )}
-          </div>
+              
+              {getSelectedDateSessions().length > 0 ? (
+                getSelectedDateSessions().map((session, index) => (
+                  <motion.div 
+                    key={session.id} 
+                    className="session-card"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 * index, duration: 0.5 }}
+                    whileHover={{ y: -5, boxShadow: '0 10px 25px rgba(0, 0, 0, 0.3)' }}
+                  >
+                    <div className="session-header">
+                      <h4 className="session-title">{session.title}</h4>
+                      <div className="session-price">{session.price} credits</div>
+                    </div>
+                    <div className="session-details">
+                      <div className="session-detail">
+                        <span className="label">👨‍🏫 Tutor:</span> {session.tutor}
+                      </div>
+                      <div className="session-detail">
+                        <span className="label">🕐 Time:</span> {session.time}
+                      </div>
+                      <div className="session-detail">
+                        <span className="label">⏱️ Duration:</span> {session.duration} minutes
+                      </div>
+                      {session.status && (
+                        <div className="session-detail">
+                          <span className="label">📊 Status:</span> 
+                          <span className={`status-badge status-${session.status}`}>
+                            {session.status}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="session-description">
+                      {session.description}
+                    </div>
+                    <div className="session-actions">
+                      <motion.button 
+                        className="btn primary"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => alert('Join session functionality would go here')}
+                      >
+                        Join Session
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                ))
+              ) : (
+                <div className="no-sessions">
+                  <div className="no-sessions-icon">📅</div>
+                  <p>No sessions scheduled for this date</p>
+                  <p className="no-sessions-hint">Try selecting a different date to see available sessions</p>
+                </div>
+              )}
+            </div>
+          )}
         </motion.div>
       </div>
     </div>

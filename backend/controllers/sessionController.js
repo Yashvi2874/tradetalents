@@ -53,14 +53,21 @@ const getSessionById = async (req, res) => {
 
 // @desc    Create new session
 // @route   POST /api/sessions
-// @access  Private (Tutors only)
+// @access  Private (Tutors and Students in development)
 const createSession = async (req, res) => {
   try {
     const { title, description, startTime, endTime, price, maxStudents } = req.body;
 
-    // Only tutors can create sessions
-    if (req.user.role !== 'tutor' && req.user.role !== 'admin') {
+    // In development, allow both tutors and students to create sessions
+    // In production, only tutors can create sessions
+    if (process.env.NODE_ENV !== 'development' && 
+        req.user.role !== 'tutor' && req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Only tutors can create sessions' });
+    }
+
+    // Validate that startTime is before endTime
+    if (new Date(startTime) >= new Date(endTime)) {
+      return res.status(400).json({ message: 'End time must be after start time' });
     }
 
     const session = new Session({
@@ -69,8 +76,8 @@ const createSession = async (req, res) => {
       tutor: req.user._id,
       startTime: new Date(startTime),
       endTime: new Date(endTime),
-      price,
-      maxStudents,
+      price: price || 10, // Default price if not provided
+      maxStudents: maxStudents || 10, // Default max students if not provided
     });
 
     const createdSession = await session.save();
@@ -80,6 +87,7 @@ const createSession = async (req, res) => {
     
     res.status(201).json(createdSession);
   } catch (error) {
+    console.error('Error creating session:', error);
     res.status(500).json({ message: error.message });
   }
 };
