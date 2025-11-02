@@ -15,7 +15,7 @@ const Chat = ({ sessionId, sessionTitle, isOpen, onClose, tutorId, tutorName, sk
   // Initialize WebSocket connection
   useEffect(() => {
     // Use import.meta.env for Vite applications instead of process.env
-    const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+    const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
     
     // Create socket connection
     socketRef.current = io(API_URL, {

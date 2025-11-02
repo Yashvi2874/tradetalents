@@ -11,7 +11,7 @@ const testConnection = async () => {
     console.log('Connection string (password hidden):', uriWithoutPassword);
     
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+      serverSelectionTimeoutMS: 5001, // Timeout after 5s instead of 30s
     });
 
     console.log('✅ MongoDB Connection Successful!');

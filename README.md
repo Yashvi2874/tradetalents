@@ -66,15 +66,15 @@ npm install
 #### Frontend (.env)
 Create a `.env` file in the frontend directory:
 ```
-VITE_API_URL=http://localhost:5000/api
-VITE_BACKEND_URL=http://localhost:5000
+VITE_API_URL=http://localhost:5001/api
+VITE_BACKEND_URL=http://localhost:5001
 ```
 
 #### Backend (.env)
 Create a `.env` file in the backend directory:
 ```
 NODE_ENV=development
-PORT=5000
+PORT=5001
 MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret_key
 FRONTEND_URL=http://localhost:5173
@@ -126,7 +126,7 @@ Make sure to set the following environment variables in your Render dashboard:
 
 **Backend:**
 - NODE_ENV=production
-- PORT=5000
+- PORT=5001
 - MONGODB_URI=your_production_mongodb_connection_string
 - JWT_SECRET=your_production_jwt_secret
 - FRONTEND_URL=https://your-frontend-url.onrender.com

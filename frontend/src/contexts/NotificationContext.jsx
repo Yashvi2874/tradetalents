@@ -24,7 +24,7 @@ export const NotificationProvider = ({ children }) => {
     // Auto remove notification after 5 seconds
     setTimeout(() => {
       removeNotification(id);
-    }, 5000);
+    }, 5001);
   };
 
   const removeNotification = (id) => {

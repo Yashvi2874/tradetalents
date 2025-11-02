@@ -23,7 +23,7 @@ const BrowseSkills = () => {
   // Initialize WebSocket connection
   useEffect(() => {
     // Use import.meta.env for Vite applications instead of process.env
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
     const newSocket = io(backendUrl);
     setSocket(newSocket);
 
