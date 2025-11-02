@@ -30,13 +30,31 @@ const Dashboard = () => {
         setError(null);
 
         // Fetch user profile to get credits
-        const profileResponse = await userAPI.getProfile();
+        let profileResponse;
+        try {
+          profileResponse = await userAPI.getProfile();
+        } catch (err) {
+          console.error('Error fetching profile:', err);
+          throw new Error(`Failed to load profile: ${err.message}`);
+        }
         
         // Fetch user skills
-        const skillsResponse = await userAPI.getSkills();
+        let skillsResponse;
+        try {
+          skillsResponse = await userAPI.getSkills();
+        } catch (err) {
+          console.error('Error fetching skills:', err);
+          throw new Error(`Failed to load skills: ${err.message}`);
+        }
         
         // Fetch user sessions
-        const sessionsResponse = await sessionAPI.getAll();
+        let sessionsResponse;
+        try {
+          sessionsResponse = await sessionAPI.getAll();
+        } catch (err) {
+          console.error('Error fetching sessions:', err);
+          throw new Error(`Failed to load sessions: ${err.message}`);
+        }
 
         // Update state
         setStats({
@@ -48,12 +66,26 @@ const Dashboard = () => {
           ).length || 0
         });
 
+        // Transform session data to match component expectations
+        const transformedSessions = sessionsResponse.data.map(session => ({
+          id: session._id,
+          title: session.title,
+          tutor: session.tutor?.name || 'Unknown Tutor',
+          type: session.status || 'upcoming',
+          date: session.startTime ? new Date(session.startTime).toLocaleDateString() : 'TBD',
+          time: session.startTime ? new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'TBD',
+          duration: session.startTime && session.endTime ? 
+            Math.round((new Date(session.endTime) - new Date(session.startTime)) / (1000 * 60)) + ' min' : 'TBD',
+          price: session.price || 0,
+          description: session.description || ''
+        }));
+
         setSkills(skillsResponse.data);
-        setSessions(sessionsResponse.data);
+        setSessions(transformedSessions);
 
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
-        setError('Failed to load dashboard data. Please try again later.');
+        setError(err.message || 'Failed to load dashboard data. Please try again later.');
       } finally {
         setLoading(false);
       }

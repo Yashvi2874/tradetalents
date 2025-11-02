@@ -42,6 +42,7 @@ export const AuthProvider = ({ children }) => {
             }
           } catch (e) {
             // Token invalid or network error, clear storage
+            console.log('Token validation failed:', e);
             localStorage.removeItem('user');
             localStorage.removeItem('token');
           }

@@ -33,6 +33,7 @@ const corsOptions = {
     const allowedOrigins = [
       'http://localhost:5173',
       'http://localhost:3000',
+      'http://localhost:5000',
       'http://localhost:5001',
       'https://tradetalents.vercel.app',
       /\.vercel\.app$/, // Allow all Vercel deployments
@@ -102,6 +103,7 @@ const io = new Server(server, {
       const allowedOrigins = [
         'http://localhost:5173',
         'http://localhost:3000',
+        'http://localhost:5000',
         'http://localhost:5001',
         'https://tradetalents.vercel.app',
         /\.vercel\.app$/, // Allow all Vercel deployments
@@ -310,7 +312,7 @@ const startServer = async () => {
   try {
     await connectDB();
     
-    const PORT = process.env.PORT || 5001;
+    const PORT = process.env.PORT || 5000;
     server.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
       console.log(`WebSocket server is ready`);

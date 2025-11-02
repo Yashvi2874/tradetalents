@@ -45,7 +45,7 @@ const updateProfile = async (req, res) => {
   }
 };
 
-// @desc    Get user skills
+// @desc    Get user skills (where user is the tutor)
 // @route   GET /api/users/skills
 // @access  Private
 const getUserSkills = async (req, res) => {
