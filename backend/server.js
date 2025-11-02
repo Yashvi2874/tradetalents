@@ -11,12 +11,15 @@ const { Server } = require('socket.io');
 dotenv.config();
 
 const connectDB = require('./config/db');
+const Message = require('./models/Message');
 
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const sessionRoutes = require('./routes/sessions');
 const skillRoutes = require('./routes/skills');
 const courseRoutes = require('./routes/courses');
+const messageRoutes = require('./routes/messages');
+const chatbotRoutes = require('./routes/chatbot');
 
 const app = express();
 
@@ -149,14 +152,62 @@ io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
   // User joins a session room
-  socket.on('join-session', (data) => {
+  socket.on('join-session', async (data) => {
+    console.log('=== JOIN SESSION DEBUG INFO ===');
+    console.log('Raw join data received:', JSON.stringify(data, null, 2));
+    
     const { sessionId, userId, userName } = data;
+    
+    console.log('Parsed join data:', { sessionId, userId, userName });
+    
+    // Validate required fields
+    if (!sessionId) {
+      console.error('ERROR: Missing sessionId in join-session');
+      return;
+    }
+    
+    if (!userId) {
+      console.error('ERROR: Missing userId in join-session');
+      return;
+    }
+    
+    if (!userName) {
+      console.warn('WARNING: Missing userName in join-session, using "Anonymous"');
+    }
     
     // Store user info
     activeUsers.set(socket.id, { userId, userName, sessionId });
     
     // Join the session room
+    console.log(`Joining room: ${sessionId}`);
     socket.join(sessionId);
+    console.log(`Successfully joined room: ${sessionId}`);
+    
+    // Load previous messages from database for this session
+    try {
+      console.log(`Loading previous messages for session: ${sessionId}`);
+      const messages = await Message.find({ session: sessionId })
+        .populate('sender', 'name')
+        .sort({ createdAt: 1 })
+        .limit(50); // Limit to last 50 messages
+      
+      console.log(`Found ${messages.length} previous messages`);
+      
+      // Send previous messages to the user who just joined
+      socket.emit('previous-messages', messages.map(msg => ({
+        id: msg._id,
+        sessionId: msg.session,
+        userId: msg.sender._id,
+        userName: msg.sender.name,
+        content: msg.content,
+        timestamp: msg.createdAt,
+        isTutor: msg.isTutor
+      })));
+      
+      console.log(`Sent ${messages.length} previous messages to user`);
+    } catch (error) {
+      console.error('Error loading messages:', error);
+    }
     
     // Notify others in the room
     socket.to(sessionId).emit('user-joined', {
@@ -169,23 +220,79 @@ io.on('connection', (socket) => {
   });
 
   // Handle incoming messages
-  socket.on('send-message', (data) => {
+  socket.on('send-message', async (data) => {
+    console.log('=== MESSAGE DEBUG INFO ===');
+    console.log('Raw data received:', JSON.stringify(data, null, 2));
+    
     const { sessionId, userId, userName, content } = data;
     
-    // Store message in memory (in a real app, you'd save to database)
-    const message = {
-      id: Date.now(),
-      sessionId,
-      userId,
-      userName,
-      content,
-      timestamp: new Date()
-    };
+    console.log('Parsed data:', { sessionId, userId, userName, content });
     
-    // Broadcast message to all users in the session room
-    io.to(sessionId).emit('receive-message', message);
+    // Validate required fields
+    if (!sessionId) {
+      console.error('ERROR: Missing sessionId');
+      return;
+    }
     
-    console.log(`Message from ${userName} in session ${sessionId}: ${content}`);
+    if (!userId) {
+      console.error('ERROR: Missing userId');
+      return;
+    }
+    
+    if (!content) {
+      console.error('ERROR: Missing content');
+      return;
+    }
+    
+    if (!userName) {
+      console.warn('WARNING: Missing userName, using "Anonymous"');
+    }
+    
+    try {
+      console.log('Attempting to save message to database...');
+      
+      // Save message to database
+      const message = new Message({
+        session: sessionId,
+        sender: userId,
+        content: content,
+        isTutor: false // This would need to be determined based on user role in a real app
+      });
+      
+      console.log('Message document created:', JSON.stringify(message, null, 2));
+      
+      const savedMessage = await message.save();
+      
+      console.log('Message successfully saved to database:', JSON.stringify(savedMessage, null, 2));
+      
+      // Populate sender info
+      await savedMessage.populate('sender', 'name');
+      
+      // Prepare message for broadcast
+      const messageToSend = {
+        id: savedMessage._id,
+        sessionId: savedMessage.session,
+        userId: savedMessage.sender._id,
+        userName: savedMessage.sender.name,
+        content: savedMessage.content,
+        timestamp: savedMessage.createdAt,
+        isTutor: savedMessage.isTutor
+      };
+      
+      console.log('Prepared message for broadcast:', JSON.stringify(messageToSend, null, 2));
+      
+      // Broadcast message to all users in the session room
+      console.log(`Broadcasting to room: ${sessionId}`);
+      io.to(sessionId).emit('receive-message', messageToSend);
+      
+      console.log(`Message saved and broadcast successfully from ${userName} in session ${sessionId}: ${content}`);
+    } catch (error) {
+      console.error('=== ERROR SAVING MESSAGE ===');
+      console.error('Error:', error);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      console.error('========================');
+    }
   });
 
   // Handle typing indicator
@@ -237,6 +344,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/skills', skillRoutes);
 app.use('/api/courses', courseRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/chatbot', chatbotRoutes);
 
 // Health check endpoints
 app.get('/api/health', (req, res) => {

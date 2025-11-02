@@ -21,6 +21,7 @@ import BrowseSkills from './pages/BrowseSkills';
 import SkillDetails from './pages/SkillDetails';
 import Messages from './pages/Messages';
 import Calendar from './pages/Calendar';
+import ChatbotPage from './pages/Chatbot';
 
 function App() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -95,6 +96,11 @@ function App() {
                   <Messages />
                 </ProtectedRoute>
               } />
+              <Route path="/chatbot" element={
+                <ProtectedRoute>
+                  <ChatbotPage />
+                </ProtectedRoute>
+              } />
               <Route path="/calendar" element={
                 <ProtectedRoute>
                   <Calendar />
@@ -151,6 +157,11 @@ function App() {
               <Route path="/messages" element={
                 <ProtectedRoute>
                   <Messages />
+                </ProtectedRoute>
+              } />
+              <Route path="/chatbot" element={
+                <ProtectedRoute>
+                  <ChatbotPage />
                 </ProtectedRoute>
               } />
               <Route path="/calendar" element={

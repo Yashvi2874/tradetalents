@@ -1,18 +1,18 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import './MobileNavbar.css';
 
 const MobileNavbar = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
 
   const navItems = [
     { to: "/", label: "Home", icon: "🏠" },
     { to: "/dashboard", label: "Dashboard", icon: "📊" },
     { to: "/browse", label: "Browse", icon: "🔍" },
     { to: "/messages", label: "Chat", icon: "💬" },
+    { to: "/chatbot", label: "SkillBot", icon: "🤖" },
     { to: "/calendar", label: "Calendar", icon: "📅" },
     { to: "/credits", label: "Credits", icon: "💰" }
   ];

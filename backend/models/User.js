@@ -40,6 +40,10 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Session'
   }],
+  messages: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Message'
+  }],
   role: {
     type: String,
     enum: ['student', 'tutor', 'admin'],

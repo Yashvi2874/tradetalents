@@ -1,19 +1,32 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import io from 'socket.io-client';
+import { io } from 'socket.io-client';
+import Chatbot from './Chatbot';
 import './Chat.css';
 
-const Chat = ({ sessionId, sessionTitle, isOpen, onClose, tutorId, tutorName, skillContext }) => {
-  const { user } = useAuth();
+const Chat = ({ 
+  sessionId, 
+  tutorId, 
+  tutorName, 
+  sessionTitle, 
+  skillContext,
+  user 
+}) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const [typingUsers, setTypingUsers] = useState([]);
-  const messagesEndRef = useRef(null);
+  const [isChatbotMode, setIsChatbotMode] = useState(false);
   const socketRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
-  // Initialize WebSocket connection
+  // Reset chat mode when session changes
   useEffect(() => {
+    setIsChatbotMode(false);
+  }, [sessionId]);
+
+  useEffect(() => {
+    // If in chatbot mode, we don't need socket connection
+    if (isChatbotMode) return;
+
     // Use import.meta.env for Vite applications instead of process.env
     const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
     
@@ -35,6 +48,11 @@ const Chat = ({ sessionId, sessionTitle, isOpen, onClose, tutorId, tutorName, sk
     // Listen for incoming messages
     socketRef.current.on('receive-message', (message) => {
       setMessages(prevMessages => [...prevMessages, message]);
+    });
+
+    // Listen for previous messages when joining
+    socketRef.current.on('previous-messages', (previousMessages) => {
+      setMessages(previousMessages);
     });
 
     // Listen for typing indicators
@@ -73,7 +91,7 @@ const Chat = ({ sessionId, sessionTitle, isOpen, onClose, tutorId, tutorName, sk
         socketRef.current.disconnect();
       }
     };
-  }, [sessionId, tutorId, user]);
+  }, [sessionId, tutorId, user, isChatbotMode]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -84,7 +102,7 @@ const Chat = ({ sessionId, sessionTitle, isOpen, onClose, tutorId, tutorName, sk
   useEffect(() => {
     let typingTimeout;
     
-    if (newMessage.trim() !== '') {
+    if (!isChatbotMode && newMessage.trim() !== '') {
       // Emit typing start
       const roomId = sessionId || `tutor-${tutorId}-${user?._id}`;
       
@@ -119,7 +137,7 @@ const Chat = ({ sessionId, sessionTitle, isOpen, onClose, tutorId, tutorName, sk
         });
       }
     };
-  }, [newMessage, sessionId, tutorId, user]);
+  }, [newMessage, sessionId, tutorId, user, isChatbotMode]);
 
   const handleSendMessage = (e) => {
     e.preventDefault();
@@ -150,6 +168,29 @@ const Chat = ({ sessionId, sessionTitle, isOpen, onClose, tutorId, tutorName, sk
     return 'Chat';
   };
 
+  // Toggle between human chat and chatbot
+  const toggleChatMode = () => {
+    setIsChatbotMode(!isChatbotMode);
+  };
+
+  // If chatbot mode is enabled, render the chatbot component
+  if (isChatbotMode) {
+    return (
+      <div className="chat-container">
+        <div className="chat-header">
+          <div className="chat-title">
+            <h3>SkillBot Assistant</h3>
+            <p>Your AI learning companion</p>
+          </div>
+          <button className="toggle-chat-mode" onClick={toggleChatMode}>
+            Switch to Human Chat
+          </button>
+        </div>
+        <Chatbot user={user} skillContext={skillContext} />
+      </div>
+    );
+  }
+
   // Since we're using side-by-side layout, we don't need to check isOpen
   // The parent component will handle visibility
 
@@ -162,7 +203,9 @@ const Chat = ({ sessionId, sessionTitle, isOpen, onClose, tutorId, tutorName, sk
             <p>Skill: {skillContext.skillName}</p>
           )}
         </div>
-        {/* Removed close button since it's side-by-side now */}
+        <button className="toggle-chat-mode" onClick={toggleChatMode}>
+          Switch to SkillBot
+        </button>
       </div>
       
       <div className="chat-session-info">

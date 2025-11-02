@@ -47,6 +47,7 @@ const Header = () => {
     { to: "/dashboard", label: "Dashboard" },
     { to: "/browse", label: "Browse" },
     { to: "/messages", label: "Chat" },
+    { to: "/chatbot", label: "SkillBot" },
     { to: "/calendar", label: "Calendar" },
     { to: "/credits", label: "Credits" }
   ];
