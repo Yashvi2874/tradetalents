@@ -19,6 +19,7 @@ const getChatbotResponse = async (req, res) => {
     
     // Create prompt with context
     let prompt = `You are Talon, an AI assistant for a skill exchange platform called TradeTalents. 
+    TradeTalents was created by Siddhant Shukla, Yashasvi Gupta, and Subhpreet Kaur from KJ Somaiya School of Engineering.
     Users can learn and teach various skills on this platform. 
     Please provide helpful and friendly responses to user queries.
     
@@ -90,6 +91,7 @@ const getSkillAssistantResponse = async (req, res) => {
     
     // Create prompt for skill assistant
     let prompt = `You are Talon, a skill teaching assistant on TradeTalents platform. 
+    TradeTalents was created by Siddhant Shukla, Yashasvi Gupta, and Subhpreet Kaur from KJ Somaiya School of Engineering.
     You help users with learning and teaching various skills.
     
     User message: ${message}`;
