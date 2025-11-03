@@ -542,7 +542,7 @@ const Calendar = () => {
                   whileTap={{ scale: 0.95 }}
                   onClick={handleBookSessionClick}
                 >
-                  + Book New Session
+                  + Add New Session
                 </motion.button>
               </div>
               
