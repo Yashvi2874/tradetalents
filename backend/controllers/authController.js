@@ -13,7 +13,7 @@ const generateToken = (userId) => {
 // @access  Public
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, university, role } = req.body;
+    const { name, email, password, university, role, linkedin, github, degree, yearOfStudy, userSkills } = req.body;
 
     // Check if user already exists
     const userExists = await User.findOne({ email });
@@ -27,7 +27,12 @@ const registerUser = async (req, res) => {
       email,
       password,
       university,
-      credits: 50 // New users get 50 credits
+      credits: 50, // New users get 50 credits
+      linkedin: linkedin || undefined,
+      github: github || undefined,
+      degree: degree || undefined,
+      yearOfStudy: yearOfStudy || undefined,
+      userSkills: userSkills || []
     };
 
     // Only allow setting role to 'tutor' or 'student' (not admin)
@@ -47,6 +52,11 @@ const registerUser = async (req, res) => {
         university: user.university,
         credits: user.credits,
         role: user.role,
+        linkedin: user.linkedin,
+        github: user.github,
+        degree: user.degree,
+        yearOfStudy: user.yearOfStudy,
+        userSkills: user.userSkills,
         token,
       });
     } else {
@@ -76,6 +86,11 @@ const loginUser = async (req, res) => {
         university: user.university,
         credits: user.credits,
         role: user.role,
+        linkedin: user.linkedin,
+        github: user.github,
+        degree: user.degree,
+        yearOfStudy: user.yearOfStudy,
+        userSkills: user.userSkills,
         token,
       });
     } else {

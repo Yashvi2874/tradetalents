@@ -202,7 +202,7 @@ const BrowseSkills = () => {
                 
                 <div className="session-status">
                   <span className="spots-left">
-                    {session.maxStudents - (session.students?.length || 0)} spots left
+                    {session.maxStudents - (session.students?.length || 0)} spots left ({session.students?.length || 0}/{session.maxStudents})
                   </span>
                 </div>
                 

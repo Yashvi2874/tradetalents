@@ -71,7 +71,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('user', JSON.stringify(userData));
         localStorage.setItem('token', token);
         
-        return { success: true };
+        return { success: true, user: userData };
       } else {
         throw new Error('Invalid response from server');
       }
@@ -96,12 +96,38 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('user', JSON.stringify(userData));
         localStorage.setItem('token', token);
         
-        return { success: true };
+        return { success: true, user: userData };
       } else {
         throw new Error('Invalid response from server');
       }
     } catch (err) {
       const message = err.response?.data?.message || 'Registration failed';
+      setError(message);
+      return { success: false, error: message };
+    }
+  };
+
+  // Update profile function
+  const updateProfile = async (profileData) => {
+    try {
+      setError(null);
+      
+      const response = await authAPI.updateUser(profileData);
+      
+      if (response.data) {
+        // Update user in state and localStorage
+        setUser(prevUser => {
+          const updatedUser = { ...prevUser, ...response.data };
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+          return updatedUser;
+        });
+        
+        return { success: true };
+      } else {
+        throw new Error('Invalid response from server');
+      }
+    } catch (err) {
+      const message = err.response?.data?.message || 'Profile update failed';
       setError(message);
       return { success: false, error: message };
     }
@@ -128,6 +154,7 @@ export const AuthProvider = ({ children }) => {
     error,
     login,
     register,
+    updateProfile,
     logout,
     isAuthenticated: !!user,
   };

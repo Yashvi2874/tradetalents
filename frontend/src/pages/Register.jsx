@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import AdditionalProfileInfo from '../components/AdditionalProfileInfo';
 
 const Register = () => {
-  const [formData, setFormData] = useState({
+  const [step, setStep] = useState(1); // 1 for basic info, 2 for additional info
+  const [basicFormData, setBasicFormData] = useState({
     name: '',
     email: '',
     university: '',
@@ -13,6 +15,7 @@ const Register = () => {
   
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [registeredUser, setRegisteredUser] = useState(null);
   
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -34,7 +37,7 @@ const Register = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setBasicFormData(prev => ({
       ...prev,
       [name]: value
     }));
@@ -48,46 +51,46 @@ const Register = () => {
     }
   };
 
-  const validateForm = () => {
+  const validateBasicForm = () => {
     const newErrors = {};
     
-    if (!formData.name.trim()) {
+    if (!basicFormData.name.trim()) {
       newErrors.name = 'Full name is required';
-    } else if (formData.name.trim().length < 2) {
+    } else if (basicFormData.name.trim().length < 2) {
       newErrors.name = 'Name must be at least 2 characters';
     }
     
-    if (!formData.email) {
+    if (!basicFormData.email) {
       newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    } else if (!/\S+@\S+\.\S+/.test(basicFormData.email)) {
       newErrors.email = 'Email address is invalid';
     }
     
-    if (!formData.university.trim()) {
+    if (!basicFormData.university.trim()) {
       newErrors.university = 'University is required';
-    } else if (formData.university.trim().length < 2) {
+    } else if (basicFormData.university.trim().length < 2) {
       newErrors.university = 'University name must be at least 2 characters';
     }
     
-    if (!formData.password) {
+    if (!basicFormData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
+    } else if (basicFormData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
     }
     
-    if (!formData.confirmPassword) {
+    if (!basicFormData.confirmPassword) {
       newErrors.confirmPassword = 'Please confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
+    } else if (basicFormData.password !== basicFormData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
     
     return newErrors;
   };
 
-  const handleSubmit = async (e) => {
+  const handleBasicSubmit = async (e) => {
     e.preventDefault();
     
-    const formErrors = validateForm();
+    const formErrors = validateBasicForm();
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
       return;
@@ -96,9 +99,10 @@ const Register = () => {
     setIsSubmitting(true);
     
     try {
-      const result = await register(formData);
+      const result = await register(basicFormData);
       if (result.success) {
-        navigate('/dashboard');
+        setRegisteredUser(result.user);
+        setStep(2); // Move to additional info step
       } else {
         setErrors({ form: result.error || 'Registration failed' });
       }
@@ -108,6 +112,23 @@ const Register = () => {
       setIsSubmitting(false);
     }
   };
+
+  const handleSkipAdditionalInfo = () => {
+    navigate('/dashboard');
+  };
+
+  const handleCompleteAdditionalInfo = () => {
+    navigate('/dashboard');
+  };
+
+  if (step === 2) {
+    return (
+      <AdditionalProfileInfo 
+        onSkip={handleSkipAdditionalInfo}
+        onComplete={handleCompleteAdditionalInfo}
+      />
+    );
+  }
 
   return (
     <section
@@ -125,6 +146,7 @@ const Register = () => {
 
       <div className="auth-card">
         <h1 className="auth-title">Create an Account</h1>
+        <p className="auth-subtitle">Step 1 of 2: Basic Information</p>
         <div className="auth-underline"></div>
 
         {errors.form && (
@@ -133,14 +155,14 @@ const Register = () => {
           </div>
         )}
 
-        <form className="auth-form" onSubmit={handleSubmit}>
+        <form className="auth-form" onSubmit={handleBasicSubmit}>
           <label className="auth-label" htmlFor="name">Full Name</label>
           <input
             className={`auth-input ${errors.name ? 'error' : ''}`}
             id="name"
             name="name"
             type="text"
-            value={formData.name}
+            value={basicFormData.name}
             onChange={handleChange}
             placeholder="Enter your full name"
             aria-invalid={errors.name ? 'true' : 'false'}
@@ -154,7 +176,7 @@ const Register = () => {
             id="email"
             name="email"
             type="email"
-            value={formData.email}
+            value={basicFormData.email}
             onChange={handleChange}
             placeholder="Enter your email"
             aria-invalid={errors.email ? 'true' : 'false'}
@@ -168,7 +190,7 @@ const Register = () => {
             id="university"
             name="university"
             type="text"
-            value={formData.university}
+            value={basicFormData.university}
             onChange={handleChange}
             placeholder="Enter your university"
             aria-invalid={errors.university ? 'true' : 'false'}
@@ -182,7 +204,7 @@ const Register = () => {
             id="password"
             name="password"
             type="password"
-            value={formData.password}
+            value={basicFormData.password}
             onChange={handleChange}
             placeholder="Create a password"
             aria-invalid={errors.password ? 'true' : 'false'}
@@ -196,7 +218,7 @@ const Register = () => {
             id="confirmPassword"
             name="confirmPassword"
             type="password"
-            value={formData.confirmPassword}
+            value={basicFormData.confirmPassword}
             onChange={handleChange}
             placeholder="Confirm your password"
             aria-invalid={errors.confirmPassword ? 'true' : 'false'}
@@ -205,7 +227,7 @@ const Register = () => {
           {errors.confirmPassword && <span className="auth-error-field">{errors.confirmPassword}</span>}
 
           <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-            {isSubmitting ? 'Registering...' : 'Register'}
+            {isSubmitting ? 'Registering...' : 'Continue to Additional Info'}
           </button>
         </form>
 

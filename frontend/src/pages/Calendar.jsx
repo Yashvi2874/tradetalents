@@ -55,7 +55,8 @@ const Calendar = () => {
       setLoading(true);
       setError(null);
       
-      const response = await sessionAPI.getAllSessions();
+      // Fetch only the user's sessions (created or booked)
+      const response = await sessionAPI.getAll();
       
       // Transform session data to match calendar format with proper timezone handling
       const calendarSessions = response.data.map(session => {
@@ -78,7 +79,8 @@ const Calendar = () => {
           description: session.description,
           status: session.status,
           meetLink: session.meetLink,
-          skills: session.skills || [] // Include skills in session data
+          skills: session.skills || [], // Include skills in session data
+          students: session.students || [] // Include students for tutor view
         };
       });
       
@@ -100,9 +102,12 @@ const Calendar = () => {
     const fetchSkills = async () => {
       try {
         const response = await skillAPI.getAllSkills();
-        setSkills(response.data);
+        // Ensure we're setting an array
+        setSkills(Array.isArray(response.data) ? response.data : []);
       } catch (err) {
         console.error('Error fetching skills:', err);
+        // Set to empty array on error
+        setSkills([]);
       }
     };
 
@@ -254,8 +259,8 @@ const Calendar = () => {
         description: bookingData.description,
         startTime: startTime.toISOString(), // This will convert to UTC for storage
         endTime: endTime.toISOString(), // This will convert to UTC for storage
-        price: parseInt(bookingData.price) || 10,
-        maxStudents: 10,
+        price: 5, // Fixed price of 5 credits
+        maxStudents: 30, // Fixed max students of 30
         meetLink: bookingData.meetLink || undefined
       };
       
@@ -499,14 +504,26 @@ const Calendar = () => {
                     <input
                       type="number"
                       name="price"
-                      value={bookingData.price}
-                      onChange={handleBookingInputChange}
-                      min="1"
-                      required
+                      value="5"
+                      readOnly
+                      disabled
                     />
+                    <small>Fixed at 5 credits per session</small>
                   </div>
+
+                <div className="form-group">
+                  <label>Max Students:</label>
+                  <input
+                    type="number"
+                    name="maxStudents"
+                    value="30"
+                    readOnly
+                    disabled
+                  />
+                  <small>Fixed at 30 students per session</small>
                 </div>
-                
+              </div>
+
                 <div className="form-group">
                   <label>Meeting Link (Optional):</label>
                   <input
@@ -527,7 +544,7 @@ const Calendar = () => {
                     multiple
                     style={{ height: '100px' }}
                   >
-                    {skills.map((skill) => (
+                    {Array.isArray(skills) && skills.map((skill) => (
                       <option key={skill._id} value={skill._id}>
                         {skill.name} - {skill.tutor?.name || 'Unknown Tutor'}
                       </option>
@@ -595,6 +612,11 @@ const Calendar = () => {
                       <div className="session-detail">
                         <span className="label">⏱️ Duration:</span> {session.duration} minutes
                       </div>
+                      {session.students && (
+                        <div className="session-detail">
+                          <span className="label">👥 Students:</span> {session.students.length}/{session.maxStudents}
+                        </div>
+                      )}
                       {session.status && (
                         <div className="session-detail">
                           <span className="label">📊 Status:</span> 

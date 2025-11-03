@@ -48,6 +48,28 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['student', 'tutor', 'admin'],
     default: 'student'
+  },
+  // New optional fields for user profile
+  linkedin: {
+    type: String,
+    trim: true
+  },
+  github: {
+    type: String,
+    trim: true
+  },
+  degree: {
+    type: String,
+    trim: true
+  },
+  yearOfStudy: {
+    type: Number,
+    min: 1,
+    max: 10
+  },
+  userSkills: {
+    type: [String],
+    default: []
   }
 }, {
   timestamps: true

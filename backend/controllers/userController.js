@@ -18,7 +18,7 @@ const getProfile = async (req, res) => {
 // @access  Private
 const updateProfile = async (req, res) => {
   try {
-    const { name, university, bio } = req.body;
+    const { name, university, bio, linkedin, github, degree, yearOfStudy, userSkills } = req.body;
 
     const user = await User.findById(req.user._id);
 
@@ -26,6 +26,11 @@ const updateProfile = async (req, res) => {
       user.name = name || user.name;
       user.university = university || user.university;
       user.bio = bio || user.bio;
+      user.linkedin = linkedin || user.linkedin;
+      user.github = github || user.github;
+      user.degree = degree || user.degree;
+      user.yearOfStudy = yearOfStudy || user.yearOfStudy;
+      user.userSkills = userSkills || user.userSkills;
 
       const updatedUser = await user.save();
 
@@ -36,6 +41,11 @@ const updateProfile = async (req, res) => {
         university: updatedUser.university,
         credits: updatedUser.credits,
         bio: updatedUser.bio,
+        linkedin: updatedUser.linkedin,
+        github: updatedUser.github,
+        degree: updatedUser.degree,
+        yearOfStudy: updatedUser.yearOfStudy,
+        userSkills: updatedUser.userSkills,
       });
     } else {
       res.status(404).json({ message: 'User not found' });

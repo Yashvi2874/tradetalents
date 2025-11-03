@@ -25,9 +25,13 @@ const Messages = () => {
         return;
       }
       
-      // Create a temporary conversation for chatting with the tutor
+      // Create a consistent conversation ID (sorted by user IDs)
+      const userIds = [user._id, tutorContext.tutorId].sort();
+      const conversationId = `conv-${userIds[0]}-${userIds[1]}`;
+      
+      // Create a temporary conversation for chatting with the tutor using consistent ID format
       const tempConversation = {
-        id: `tutor-${tutorContext.tutorId}-${user._id}`,
+        id: conversationId,
         sessionId: null,
         sessionTitle: `Chat with ${tutorContext.tutorName}`,
         instructor: {

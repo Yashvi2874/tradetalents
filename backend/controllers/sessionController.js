@@ -47,7 +47,15 @@ const getAllSessions = async (req, res) => {
     .sort({ startTime: 1 }) // Sort by start time
     .lean(); // Use lean() for better performance
 
-    res.json(sessions);
+    // Ensure all sessions have the correct price (5 credits)
+    const correctedSessions = sessions.map(session => {
+      return {
+        ...session,
+        price: 5 // Fixed price for all sessions
+      };
+    });
+
+    res.json(correctedSessions);
   } catch (error) {
     console.error('Error fetching sessions from MongoDB:', error);
     res.status(500).json({ message: 'Failed to fetch sessions from database', error: error.message });
@@ -71,7 +79,15 @@ const getSessions = async (req, res) => {
     .populate('skills', 'name category') // Populate skill information
     .lean(); // Use lean() for better performance
 
-    res.json(sessions);
+    // Ensure all sessions have the correct price (5 credits)
+    const correctedSessions = sessions.map(session => {
+      return {
+        ...session,
+        price: 5 // Fixed price for all sessions
+      };
+    });
+
+    res.json(correctedSessions);
   } catch (error) {
     console.error('Error fetching sessions from MongoDB:', error);
     res.status(500).json({ message: 'Failed to fetch sessions from database', error: error.message });
@@ -98,7 +114,13 @@ const getSessionById = async (req, res) => {
       );
 
       if (isTutor || isStudent) {
-        res.json(session);
+        // Ensure session has the correct price (5 credits)
+        const correctedSession = {
+          ...session,
+          price: 5 // Fixed price for all sessions
+        };
+        
+        res.json(correctedSession);
       } else {
         res.status(403).json({ message: 'Not authorized to access this session' });
       }
@@ -148,6 +170,11 @@ const createSession = async (req, res) => {
       finalSkillIds = await findOrCreateSkills(names, req.user._id);
     }
 
+    // Add 5 credits to the tutor/creator when creating a session
+    const tutor = await User.findById(req.user._id);
+    tutor.credits += 5;
+    await tutor.save();
+
     const session = new Session({
       title,
       description,
@@ -155,7 +182,7 @@ const createSession = async (req, res) => {
       startTime: new Date(startTime),
       endTime: new Date(endTime),
       price: 5, // All sessions cost 5 credits
-      maxStudents: maxStudents || 10, // Default max students if not provided
+      maxStudents: maxStudents && maxStudents <= 30 ? maxStudents : 30, // Max 30 students per session
       meetLink: sessionMeetLink,
       skills: finalSkillIds // Add skills array if provided
     });
@@ -166,7 +193,11 @@ const createSession = async (req, res) => {
     await createdSession.populate('tutor', 'name');
     await createdSession.populate('skills', 'name category description');
     
-    res.status(201).json(createdSession);
+    res.status(201).json({
+      session: createdSession,
+      message: 'Session created successfully. You earned 5 credits for creating this session.',
+      totalCredits: tutor.credits
+    });
   } catch (error) {
     console.error('Error creating session:', error);
     res.status(500).json({ message: error.message });
@@ -178,7 +209,7 @@ const createSession = async (req, res) => {
 // @access  Private (Tutors only)
 const updateSession = async (req, res) => {
   try {
-    const { title, description, startTime, endTime, price, maxStudents, status, meetLink } = req.body;
+    const { title, description, startTime, endTime, maxStudents, status, meetLink } = req.body;
 
     const session = await Session.findById(req.params.id);
 
@@ -192,8 +223,9 @@ const updateSession = async (req, res) => {
       session.description = description || session.description;
       session.startTime = startTime ? new Date(startTime) : session.startTime;
       session.endTime = endTime ? new Date(endTime) : session.endTime;
-      session.price = price || session.price;
-      session.maxStudents = maxStudents || session.maxStudents;
+      // Fixed price at 5 credits - do not allow price updates
+      session.price = 5;
+      session.maxStudents = maxStudents && maxStudents <= 30 ? maxStudents : session.maxStudents;
       session.status = status || session.status;
       // Only allow tutor to update meetLink if provided
       if (meetLink !== undefined) {
@@ -257,20 +289,20 @@ const joinSession = async (req, res) => {
         return res.status(400).json({ message: 'Already enrolled in this session' });
       }
 
-      // Check if session is full
+      // Check if session is full (max 30 students)
       if (session.students.length >= session.maxStudents) {
         return res.status(400).json({ message: 'Session is full' });
       }
 
-      // Check if user has enough credits
-      if (req.user.credits < session.price) {
-        return res.status(400).json({ message: 'Not enough credits' });
+      // Check if user has enough credits (5 credits required)
+      if (req.user.credits < 5) {
+        return res.status(400).json({ message: 'Not enough credits. You need 5 credits to join this session.' });
       }
 
-      // Deduct credits from user
-      const user = await User.findById(req.user._id);
-      user.credits -= session.price;
-      await user.save();
+      // Deduct 5 credits from student when joining session
+      const student = await User.findById(req.user._id);
+      student.credits -= 5;
+      await student.save();
 
       // Add user to session
       session.students.push(req.user._id);
@@ -282,9 +314,9 @@ const joinSession = async (req, res) => {
       await updatedSession.populate('skills', 'name category description');
 
       res.json({
-        message: 'Successfully joined session',
+        message: 'Successfully joined session. 5 credits deducted from your account.',
         session: updatedSession,
-        remainingCredits: user.credits
+        remainingCredits: student.credits
       });
     } else {
       res.status(404).json({ message: 'Session not found' });

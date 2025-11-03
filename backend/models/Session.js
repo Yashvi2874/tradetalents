@@ -34,7 +34,7 @@ const sessionSchema = new mongoose.Schema({
   },
   maxStudents: {
     type: Number,
-    default: 10
+    default: 30
   },
   status: {
     type: String,
