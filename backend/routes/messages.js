@@ -3,7 +3,8 @@ const router = express.Router();
 const { 
   getMessagesBySession,
   createMessage,
-  getUserMessages
+  getUserMessages,
+  getMessagesWithTutor
 } = require('../controllers/messageController');
 const auth = require('../middleware/auth');
 
@@ -13,5 +14,8 @@ router.route('/')
 
 router.route('/session/:sessionId')
   .get(auth, getMessagesBySession);
+
+router.route('/tutor/:tutorId')
+  .get(auth, getMessagesWithTutor);
 
 module.exports = router;

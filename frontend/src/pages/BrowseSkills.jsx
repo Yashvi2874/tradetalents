@@ -50,6 +50,31 @@ const BrowseSkills = () => {
     fetchSessions();
   }, []);
 
+  // Handle sort change
+  const handleSortChange = (e) => {
+    setSortBy(e.target.value);
+  };
+
+  // Handle view details - navigate to skill details page
+  const handleViewDetails = (skillId) => {
+    navigate(`/skills/${skillId}`);
+  };
+
+  // Handle book session with real-time calendar update
+  const handleBookSession = async (skill) => {
+    try {
+      // Create a session for this skill
+      const sessionData = {
+        title: `Session for ${skill.name}`,
+        description: `Learning session for ${skill.name}`,
+        startTime: new Date(Date.now() + 86400000), // Tomorrow
+        endTime: new Date(Date.now() + 86400000 + 3600000), // 1 hour session
+        price: skill.price,
+        maxStudents: 10,
+        skills: [skill._id] // Use skills array instead of skillId
+      };
+      
+      const response = await sessionAPI.createSession(sessionData);
   // Handle join session
   const handleJoinSession = async (session) => {
     try {

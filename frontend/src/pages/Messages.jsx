@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { sessionAPI } from '../services/sessionService';
+import { messageAPI } from '../services/messageService';
 import Chat from '../components/Chat';
 import './Messages.css';
 
 const Messages = () => {
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -19,7 +21,7 @@ const Messages = () => {
     if (tutorContext && tutorContext.tutorId) {
       // Create a temporary conversation for chatting with the tutor
       const tempConversation = {
-        id: `temp-${tutorContext.tutorId}`,
+        id: `temp-${tutorContext.tutorId}-${user._id}`,
         sessionId: null,
         sessionTitle: `Chat with ${tutorContext.tutorName}`,
         instructor: {
@@ -39,8 +41,17 @@ const Messages = () => {
       
       // Set this as the selected conversation
       setSelectedConversation(tempConversation);
+      
+      // Add this to conversations list if not already there
+      setConversations(prev => {
+        const exists = prev.find(conv => conv.id === tempConversation.id);
+        if (!exists) {
+          return [tempConversation, ...prev];
+        }
+        return prev;
+      });
     }
-  }, [location.state]);
+  }, [location.state, user._id, user.name]);
 
   // Fetch real conversations from backend
   useEffect(() => {
@@ -70,7 +81,11 @@ const Messages = () => {
           status: session.status
         }));
         
-        setConversations(conversationData);
+        setConversations(prev => {
+          // Merge with existing tutor conversations
+          const tutorConvs = prev.filter(conv => conv.type === 'tutor');
+          return [...tutorConvs, ...conversationData];
+        });
         
         // If no conversation is selected and we have conversations, select the first one
         if (!selectedConversation && conversationData.length > 0 && !location.state) {
