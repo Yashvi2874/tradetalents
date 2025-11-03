@@ -1,15 +1,19 @@
 .browse-skills {
-  padding: 2rem 1rem;
+  padding: 2rem 0;
   background-color: var(--bg-primary);
   min-height: 100vh;
   width: 100%;
   max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
 }
 
 /* Add padding bottom for mobile navbar */
 @media (max-width: 768px) {
   .browse-skills {
-    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(4rem - env(safe-area-inset-bottom));
   }
 }
 
@@ -17,6 +21,11 @@
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
+  padding: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .browse-skills-header {
@@ -413,6 +422,152 @@
 .no-results p {
   margin: 0;
   font-size: 1rem;
+}
+
+/* Sessions Grid - Render directly on page */
+.sessions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  width: 100%;
+  padding: 0 1rem 20px 1rem;
+  margin: 0 auto;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.section-title {
+  font-size: 1.8rem;
+  margin: 2rem 1rem 1.5rem 1rem;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--primary-color);
+  padding-bottom: 0.5rem;
+  display: inline-block;
+}
+
+.session-card {
+  background-color: var(--bg-card);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-left: 5px solid var(--primary-color);
+  position: relative;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.session-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Distinct card styles */
+.session-card-0 { border-left-color: #4CAF50; }
+.session-card-1 { border-left-color: #2196F3; }
+.session-card-2 { border-left-color: #FF9800; }
+.session-card-3 { border-left-color: #9C27B0; }
+.session-card-4 { border-left-color: #E91E63; }
+
+.session-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.session-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  flex: 1;
+}
+
+.session-price {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.session-description {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  flex-grow: 1;
+}
+
+.session-time {
+  margin-bottom: 1rem;
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 0.8rem;
+  border-radius: 6px;
+}
+
+.time-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.time-item:last-child {
+  margin-bottom: 0;
+}
+
+.time-label {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.time-value {
+  color: var(--text-secondary);
+}
+
+.session-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+.spots-left {
+  font-size: 0.9rem;
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.join-btn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.join-btn:hover {
+  background-color: var(--primary-dark);
+}
+
+.session-actions {
+  margin-top: 1rem;
+}
+
+/* Responsive adjustments for sessions */
+@media (max-width: 768px) {
+  .sessions-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Responsive Design */

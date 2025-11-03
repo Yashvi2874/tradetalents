@@ -49,6 +49,14 @@ const getSkills = async (req, res) => {
       .populate('tutor', 'name')
       .sort(sort)
       .lean(); // Use lean() for better performance
+      
+    // Fetch all sessions to display with skills
+    const sessions = await Session.find({
+      status: { $in: ['upcoming', 'ongoing'] } // Only show upcoming and ongoing sessions
+    })
+    .populate('tutor', 'name')
+    .populate('skills', 'name category')
+    .lean();
     
     // Add session information for each skill by querying the sessions collection directly
     const skillsWithSessionInfo = await Promise.all(skills.map(async (skill) => {
@@ -71,7 +79,11 @@ const getSkills = async (req, res) => {
       };
     }));
     
-    res.json(skillsWithSessionInfo);
+    // Return the skills with session information
+    res.json({
+      skills: skillsWithSessionInfo,
+      sessions
+    });
   } catch (error) {
     console.error('Error fetching skills from MongoDB:', error);
     res.status(500).json({ message: 'Failed to fetch skills from database', error: error.message });
