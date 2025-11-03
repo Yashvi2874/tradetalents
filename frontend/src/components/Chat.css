@@ -69,7 +69,6 @@
   background: var(--bg-primary);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
 }
 
 .message {
@@ -79,6 +78,7 @@
   position: relative;
   animation: fadeIn 0.3s ease;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1rem;
 }
 
 .message.sent {

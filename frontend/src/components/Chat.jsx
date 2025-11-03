@@ -31,14 +31,28 @@ const Chat = ({
     // Use import.meta.env for Vite applications instead of process.env
     const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
     
-    // Create socket connection
+    // Create socket connection with fallback options
     socketRef.current = io(API_URL, {
-      transports: ['websocket'],
-      withCredentials: true
+      transports: ['websocket', 'polling'], // Try websocket first, then polling
+      withCredentials: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      timeout: 10000
     });
 
     // Join the session room or create a tutor chat room
-    const roomId = sessionId || `tutor-${tutorId}-${user?._id}`;
+    // For user-to-user chats, use a consistent room ID
+    let roomId;
+    if (sessionId) {
+      roomId = sessionId;
+    } else if (tutorId && user) {
+      // Create a consistent conversation ID (sorted by user IDs)
+      const userIds = [user._id, tutorId].sort();
+      roomId = `conv-${userIds[0]}-${userIds[1]}`;
+    } else {
+      roomId = `user-${user?._id}`;
+    }
     
     socketRef.current.emit('join-session', {
       sessionId: roomId,
@@ -46,8 +60,26 @@ const Chat = ({
       userName: user?.name || 'Anonymous'
     });
 
+    // Listen for connection events
+    socketRef.current.on('connect', () => {
+      console.log('Socket connected:', socketRef.current.id);
+    });
+
+    socketRef.current.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+    });
+
+    socketRef.current.on('disconnect', (reason) => {
+      console.log('Socket disconnected:', reason);
+    });
+
     // Listen for incoming messages
     socketRef.current.on('receive-message', (message) => {
+      setMessages(prevMessages => [...prevMessages, message]);
+    });
+
+    // Listen for private messages
+    socketRef.current.on('receive-private-message', (message) => {
       setMessages(prevMessages => [...prevMessages, message]);
     });
 
@@ -105,7 +137,16 @@ const Chat = ({
     
     if (!isChatbotMode && newMessage.trim() !== '') {
       // Emit typing start
-      const roomId = sessionId || `tutor-${tutorId}-${user?._id}`;
+      let roomId;
+      if (sessionId) {
+        roomId = sessionId;
+      } else if (tutorId && user) {
+        // Create a consistent conversation ID (sorted by user IDs)
+        const userIds = [user._id, tutorId].sort();
+        roomId = `conv-${userIds[0]}-${userIds[1]}`;
+      } else {
+        roomId = `user-${user?._id}`;
+      }
       
       socketRef.current?.emit('typing', {
         sessionId: roomId,
@@ -128,7 +169,16 @@ const Chat = ({
     return () => {
       if (typingTimeout) {
         clearTimeout(typingTimeout);
-        const roomId = sessionId || `tutor-${tutorId}-${user?._id}`;
+        let roomId;
+        if (sessionId) {
+          roomId = sessionId;
+        } else if (tutorId && user) {
+          // Create a consistent conversation ID (sorted by user IDs)
+          const userIds = [user._id, tutorId].sort();
+          roomId = `conv-${userIds[0]}-${userIds[1]}`;
+        } else {
+          roomId = `user-${user?._id}`;
+        }
         
         socketRef.current?.emit('typing', {
           sessionId: roomId,
@@ -146,12 +196,30 @@ const Chat = ({
 
     // For tutor chat (not tied to a session), we need to create a temporary session
     // or handle messages differently
-    if (!sessionId && tutorId) {
+    if (!sessionId && tutorId && user) {
       // This is a tutor chat, not tied to a specific session
       // We'll emit the message via socket
-      const roomId = `tutor-${tutorId}-${user?._id}`;
+      const userIds = [user._id, tutorId].sort();
+      const roomId = `conv-${userIds[0]}-${userIds[1]}`;
       
       // Emit the message to the server
+      socketRef.current?.emit('send-message', {
+        sessionId: roomId,
+        userId: user?._id,
+        userName: user?.name || 'Anonymous',
+        content: newMessage,
+        recipientId: tutorId // Include recipient ID for tutor chats
+      });
+      
+      // Clear the input
+      setNewMessage('');
+      return;
+    }
+
+    // For session-based chats, emit the message via socket
+    if (sessionId) {
+      const roomId = sessionId;
+      
       socketRef.current?.emit('send-message', {
         sessionId: roomId,
         userId: user?._id,
@@ -161,21 +229,7 @@ const Chat = ({
       
       // Clear the input
       setNewMessage('');
-      return;
     }
-
-    // For session-based chats, emit the message via socket
-    const roomId = sessionId;
-    
-    socketRef.current?.emit('send-message', {
-      sessionId: roomId,
-      userId: user?._id,
-      userName: user?.name || 'Anonymous',
-      content: newMessage
-    });
-
-    // Clear the input
-    setNewMessage('');
   };
 
   const formatTime = (timestamp) => {

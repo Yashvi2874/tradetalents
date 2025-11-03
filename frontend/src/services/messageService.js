@@ -13,6 +13,9 @@ export const messageAPI = {
   
   // Get messages between user and tutor
   getMessagesWithTutor: (tutorId) => api.get(`/messages/tutor/${tutorId}`),
+  
+  // Get conversation between current user and another user
+  getConversationWithUser: (userId) => api.get(`/messages/conversation/${userId}`),
 };
 
 export default messageAPI;

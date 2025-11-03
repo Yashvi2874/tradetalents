@@ -28,28 +28,35 @@ const getMessagesBySession = async (req, res) => {
 // @access  Private
 const createMessage = async (req, res) => {
   try {
-    const { session, content } = req.body;
+    const { session, recipient, content } = req.body;
     
     // Validate required fields
     if (!content) {
       return res.status(400).json({ message: 'Message content is required' });
     }
     
-    // If no session is provided, this might be a tutor chat
-    // We'll still create the message but link it to a session or use a special identifier
+    // Create the message
     const message = new Message({
       session: session || null, // Allow null for tutor chats
       sender: req.user._id,
+      recipient: recipient || null, // Allow null for session chats
       content,
       isTutor: req.user.role === 'tutor' // Set isTutor based on user role
     });
     
     const createdMessage = await message.save();
     
-    // Add message to user's messages array
+    // Add message to sender's messages array
     await User.findByIdAndUpdate(req.user._id, {
       $push: { messages: createdMessage._id }
     });
+    
+    // If there's a recipient, add message to their messages array
+    if (recipient) {
+      await User.findByIdAndUpdate(recipient, {
+        $push: { messages: createdMessage._id }
+      });
+    }
     
     // Populate sender info
     await createdMessage.populate('sender', 'name');
@@ -65,13 +72,17 @@ const createMessage = async (req, res) => {
 // @access  Private
 const getUserMessages = async (req, res) => {
   try {
-    // Get messages where user is sender or part of the session
-    // This would require joining with sessions collection to check if user is in session.students
-    // For simplicity, we'll just get messages where user is sender
-    const messages = await Message.find({ sender: req.user._id })
-      .populate('session', 'title')
-      .populate('sender', 'name')
-      .sort({ createdAt: -1 });
+    // Get messages where user is sender or recipient
+    const messages = await Message.find({
+      $or: [
+        { sender: req.user._id },
+        { recipient: req.user._id }
+      ]
+    })
+    .populate('session', 'title')
+    .populate('sender', 'name')
+    .populate('recipient', 'name')
+    .sort({ createdAt: -1 });
     
     res.json(messages);
   } catch (error) {
@@ -88,14 +99,39 @@ const getMessagesWithTutor = async (req, res) => {
     const userId = req.user._id;
     
     // Get messages between the current user and the tutor
-    // This is a simplified approach - in a real app you'd want to organize this better
     const messages = await Message.find({
       $or: [
-        { sender: userId, session: null }, // User's messages to tutor
-        { sender: tutorId, session: null }  // Tutor's messages to user
+        { sender: userId, recipient: tutorId },
+        { sender: tutorId, recipient: userId }
       ]
     })
     .populate('sender', 'name')
+    .populate('recipient', 'name')
+    .sort({ createdAt: 1 });
+    
+    res.json(messages);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get messages between two users
+// @route   GET /api/messages/conversation/:userId
+// @access  Private
+const getConversationWithUser = async (req, res) => {
+  try {
+    const { userId } = req.params; // The other user's ID
+    const currentUserId = req.user._id;
+    
+    // Get messages between the current user and the specified user
+    const messages = await Message.find({
+      $or: [
+        { sender: currentUserId, recipient: userId },
+        { sender: userId, recipient: currentUserId }
+      ]
+    })
+    .populate('sender', 'name')
+    .populate('recipient', 'name')
     .sort({ createdAt: 1 });
     
     res.json(messages);
@@ -108,5 +144,6 @@ module.exports = {
   getMessagesBySession,
   createMessage,
   getUserMessages,
-  getMessagesWithTutor
+  getMessagesWithTutor,
+  getConversationWithUser
 };

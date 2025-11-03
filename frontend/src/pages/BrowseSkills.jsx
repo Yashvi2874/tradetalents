@@ -12,6 +12,7 @@ const BrowseSkills = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [socket, setSocket] = useState(null);
+  const [sortBy, setSortBy] = useState('date');
 
   // Initialize WebSocket connection
   useEffect(() => {
@@ -75,6 +76,12 @@ const BrowseSkills = () => {
       };
       
       const response = await sessionAPI.createSession(sessionData);
+    } catch (err) {
+      console.error('Error creating session:', err);
+      alert('Failed to book session. Please try again.');
+    }
+  };
+
   // Handle join session
   const handleJoinSession = async (session) => {
     try {
@@ -96,6 +103,25 @@ const BrowseSkills = () => {
       console.error('Error joining session:', err);
       alert('Failed to join session. Please try again.');
     }
+  };
+
+  // Handle chat with tutor
+  const handleChatWithTutor = (tutorId, tutorName, skillId, skillName) => {
+    // Prevent users from chatting with themselves
+    if (tutorId === user._id) {
+      alert('You cannot chat with yourself!');
+      return;
+    }
+    
+    // Navigate to messages page with tutor context
+    navigate('/messages', {
+      state: {
+        tutorId,
+        tutorName,
+        skillId,
+        skillName
+      }
+    });
   };
 
   if (loading) {
@@ -186,6 +212,17 @@ const BrowseSkills = () => {
                     onClick={() => handleJoinSession(session)}
                   >
                     Join Session
+                  </button>
+                  <button 
+                    className="chat-btn"
+                    onClick={() => handleChatWithTutor(
+                      session.tutor?._id, 
+                      session.tutor?.name, 
+                      session.skills?.[0]?._id, 
+                      session.skills?.[0]?.name
+                    )}
+                  >
+                    Chat with Tutor
                   </button>
                 </div>
               </motion.div>

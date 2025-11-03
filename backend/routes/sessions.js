@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { 
+  getAllSessions,
   getSessions,
   getSessionById,
   getSessionsBySkill,
@@ -10,6 +11,9 @@ const {
   joinSession
 } = require('../controllers/sessionController');
 const auth = require('../middleware/auth');
+
+router.route('/all')
+  .get(getAllSessions);
 
 router.route('/')
   .get(auth, getSessions)

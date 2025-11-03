@@ -109,7 +109,9 @@ const io = new Server(server, {
         'http://localhost:5000',
         'http://localhost:5001',
         'https://tradetalents.vercel.app',
+        'https://tradetalents.onrender.com',
         /\.vercel\.app$/, // Allow all Vercel deployments
+        /\.onrender\.com$/, // Allow all Render deployments
         process.env.FRONTEND_URL
       ];
       
@@ -118,7 +120,7 @@ const io = new Server(server, {
         return callback(null, true);
       }
       
-      // Check if origin is in allowed list or matches Vercel pattern
+      // Check if origin is in allowed list or matches patterns
       let isAllowed = false;
       for (const allowedOrigin of allowedOrigins) {
         if (allowedOrigin instanceof RegExp) {
@@ -132,6 +134,11 @@ const io = new Server(server, {
         }
       }
       
+      // Also allow if no specific origin is set
+      if (!isAllowed && !process.env.FRONTEND_URL) {
+        isAllowed = true;
+      }
+      
       if (isAllowed || !origin) {
         callback(null, true);
       } else {
@@ -139,13 +146,16 @@ const io = new Server(server, {
       }
     },
     methods: ["GET", "POST"],
-    credentials: true
-  }
+    credentials: true,
+    transports: ['websocket', 'polling']
+  },
+  allowEIO3: true
 });
 
 // Store active users and rooms
 const activeUsers = new Map();
 const sessionRooms = new Map();
+const userSockets = new Map(); // Map userId to socketId
 
 // Socket.IO connection handling
 io.on('connection', (socket) => {
@@ -177,6 +187,7 @@ io.on('connection', (socket) => {
     
     // Store user info
     activeUsers.set(socket.id, { userId, userName, sessionId });
+    userSockets.set(userId, socket.id); // Map userId to socketId
     
     // Join the session room
     console.log(`Joining room: ${sessionId}`);
@@ -187,12 +198,28 @@ io.on('connection', (socket) => {
     try {
       console.log(`Loading previous messages for session: ${sessionId}`);
       
-      // For tutor chats (roomId starts with 'tutor-'), we need to handle differently
+      // For user-to-user chats (roomId starts with 'conv-'), we need to handle differently
       let messages = [];
-      if (sessionId.startsWith('tutor-')) {
-        // For tutor chats, we might want to load messages differently
-        // For now, we'll use the same approach but note this is a tutor chat
-        console.log('This is a tutor chat room');
+      if (sessionId.startsWith('conv-')) {
+        // For user-to-user chats, we need to extract user IDs from the room ID
+        // Format: conv-{userId1}-{userId2} (sorted by user IDs)
+        const parts = sessionId.split('-');
+        const user1Id = parts[1];
+        const user2Id = parts[2];
+        
+        console.log(`Loading user-to-user chat messages between ${user1Id} and ${user2Id}`);
+        
+        // Load messages between these two users
+        messages = await Message.find({
+          $or: [
+            { sender: user1Id, recipient: user2Id },
+            { sender: user2Id, recipient: user1Id }
+          ]
+        })
+        .populate('sender', 'name')
+        .populate('recipient', 'name')
+        .sort({ createdAt: 1 })
+        .limit(50); // Limit to last 50 messages
       } else {
         // Regular session chat
         messages = await Message.find({ session: sessionId })
@@ -234,9 +261,9 @@ io.on('connection', (socket) => {
     console.log('=== MESSAGE DEBUG INFO ===');
     console.log('Raw data received:', JSON.stringify(data, null, 2));
     
-    const { sessionId, userId, userName, content } = data;
+    const { sessionId, userId, userName, content, recipientId } = data;
     
-    console.log('Parsed data:', { sessionId, userId, userName, content });
+    console.log('Parsed data:', { sessionId, userId, userName, content, recipientId });
     
     // Validate required fields
     if (!sessionId) {
@@ -261,10 +288,14 @@ io.on('connection', (socket) => {
     try {
       console.log('Attempting to save message to database...');
       
+      // Determine if this is a user-to-user chat
+      const isUserChat = sessionId.startsWith('conv-');
+      
       // Save message to database
       const message = new Message({
-        session: sessionId.startsWith('tutor-') ? null : sessionId, // Set to null for tutor chats
+        session: isUserChat ? null : sessionId, // Set to null for user chats
         sender: userId,
+        recipient: recipientId || null, // Set recipient for user chats
         content: content,
         isTutor: false // This would need to be determined based on user role in a real app
       });
@@ -277,6 +308,9 @@ io.on('connection', (socket) => {
       
       // Populate sender info
       await savedMessage.populate('sender', 'name');
+      if (savedMessage.recipient) {
+        await savedMessage.populate('recipient', 'name');
+      }
       
       // Prepare message for broadcast
       const messageToSend = {
@@ -294,6 +328,15 @@ io.on('connection', (socket) => {
       // Broadcast message to all users in the session room
       console.log(`Broadcasting to room: ${sessionId}`);
       io.to(sessionId).emit('receive-message', messageToSend);
+      
+      // For user-to-user chats, also send directly to the recipient if they're online
+      if (isUserChat && recipientId) {
+        const recipientSocketId = userSockets.get(recipientId);
+        if (recipientSocketId) {
+          console.log(`Sending direct message to recipient ${recipientId}`);
+          io.to(recipientSocketId).emit('receive-message', messageToSend);
+        }
+      }
       
       console.log(`Message saved and broadcast successfully from ${userName} in session ${sessionId}: ${content}`);
     } catch (error) {
@@ -325,6 +368,50 @@ io.on('connection', (socket) => {
     console.log(`Session created: ${session.title}`);
   });
 
+  // Handle private message
+  socket.on('send-private-message', async (data) => {
+    const { senderId, recipientId, content, senderName } = data;
+    
+    try {
+      // Save private message to database
+      const message = new Message({
+        session: null,
+        sender: senderId,
+        recipient: recipientId,
+        content: content,
+        isTutor: false
+      });
+      
+      const savedMessage = await message.save();
+      
+      // Populate sender info
+      await savedMessage.populate('sender', 'name');
+      
+      // Prepare message for broadcast
+      const messageToSend = {
+        id: savedMessage._id,
+        sessionId: null,
+        userId: savedMessage.sender._id,
+        userName: savedMessage.sender.name,
+        content: savedMessage.content,
+        timestamp: savedMessage.createdAt,
+        isTutor: savedMessage.isTutor
+      };
+      
+      // Send message to recipient if they're online
+      const recipientSocketId = userSockets.get(recipientId);
+      if (recipientSocketId) {
+        io.to(recipientSocketId).emit('receive-private-message', messageToSend);
+      }
+      
+      // Also send to sender for confirmation
+      socket.emit('receive-private-message', messageToSend);
+      
+    } catch (error) {
+      console.error('Error sending private message:', error);
+    }
+  });
+
   // Handle disconnection
   socket.on('disconnect', () => {
     const userInfo = activeUsers.get(socket.id);
@@ -333,6 +420,7 @@ io.on('connection', (socket) => {
       
       // Remove user from active users
       activeUsers.delete(socket.id);
+      userSockets.delete(userId);
       
       // Notify others in the room
       if (sessionId) {
@@ -431,12 +519,30 @@ const startServer = async () => {
   try {
     await connectDB();
     
-    const PORT = process.env.PORT || 5000;
-    server.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-      console.log(`WebSocket server is ready`);
-      console.log(`Environment: ${process.env.NODE_ENV}`);
-    });
+    let PORT = process.env.PORT || 5000;
+    
+    // Function to start server on a specific port
+    const attemptStart = (port) => {
+      server.listen(port, () => {
+        console.log(`Server is running on port ${port}`);
+        console.log(`WebSocket server is ready`);
+        console.log(`Environment: ${process.env.NODE_ENV}`);
+      });
+      
+      server.on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+          console.log(`Port ${port} is in use, trying ${port + 1}`);
+          setTimeout(() => {
+            attemptStart(port + 1);
+          }, 1000);
+        } else {
+          console.error('Server error:', err);
+        }
+      });
+    };
+    
+    // Start the server
+    attemptStart(PORT);
   } catch (err) {
     console.error('Failed to start server:', err);
     process.exit(1);
@@ -446,4 +552,6 @@ const startServer = async () => {
 startServer();
 
 // Export io for use in other modules
-module.exports = { io, activeUsers, sessionRooms };
+module.exports = { io, activeUsers, sessionRooms, userSockets };
+// Export io for use in other modules
+module.exports = { io, activeUsers, sessionRooms, userSockets };

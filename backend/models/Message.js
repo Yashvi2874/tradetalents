@@ -4,12 +4,17 @@ const messageSchema = new mongoose.Schema({
   session: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Session',
-    required: true
+    default: null
   },
   sender: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
+  },
+  recipient: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
   },
   content: {
     type: String,

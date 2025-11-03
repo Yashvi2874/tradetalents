@@ -2,7 +2,7 @@ import api from './api';
 
 // Session endpoints
 export const sessionAPI = {
-  getAllSessions: () => api.get('/sessions'),
+  getAllSessions: () => api.get('/sessions/all'), // Use public endpoint for browse skills
   getSessionById: (id) => api.get(`/sessions/${id}`),
   createSession: (data) => api.post('/sessions', data),
   updateSession: (id, data) => api.put(`/sessions/${id}`, data),

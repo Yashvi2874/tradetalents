@@ -8,7 +8,10 @@ const findOrCreateSkills = async (skillNames, tutorId) => {
   
   for (const name of skillNames) {
     // Try to find existing skill by name (case insensitive)
-    let skill = await Skill.findOne({ name: new RegExp(`^${name}$`, 'i') });
+    let skill = await Skill.findOne({ 
+      name: new RegExp(`^${name}$`, 'i'),
+      tutor: tutorId
+    });
     
     // If skill doesn't exist, create it
     if (!skill) {
@@ -29,7 +32,29 @@ const findOrCreateSkills = async (skillNames, tutorId) => {
   return skillIds;
 };
 
-// @desc    Get all sessions with skill information
+// @desc    Get all public sessions with skill information
+// @route   GET /api/sessions/all
+// @access  Public
+const getAllSessions = async (req, res) => {
+  try {
+    // Get all upcoming and ongoing sessions
+    const sessions = await Session.find({
+      status: { $in: ['upcoming', 'ongoing'] }, // Only show upcoming and ongoing sessions
+      startTime: { $gte: new Date() } // Only show future sessions
+    })
+    .populate('tutor', 'name')
+    .populate('skills', 'name category') // Populate skill information
+    .sort({ startTime: 1 }) // Sort by start time
+    .lean(); // Use lean() for better performance
+
+    res.json(sessions);
+  } catch (error) {
+    console.error('Error fetching sessions from MongoDB:', error);
+    res.status(500).json({ message: 'Failed to fetch sessions from database', error: error.message });
+  }
+};
+
+// @desc    Get all sessions with skill information for authenticated users
 // @route   GET /api/sessions
 // @access  Private
 const getSessions = async (req, res) => {
@@ -91,7 +116,7 @@ const getSessionById = async (req, res) => {
 // @access  Private (Tutors and Students)
 const createSession = async (req, res) => {
   try {
-    const { title, description, startTime, endTime, price, maxStudents, meetLink, skillNames } = req.body;
+    const { title, description, startTime, endTime, maxStudents, meetLink, skillIds, skillNames } = req.body;
 
     // Allow both tutors and students to create sessions in both development and production
     // Removed the role restriction that was previously limiting session creation to tutors only in production
@@ -107,14 +132,20 @@ const createSession = async (req, res) => {
     // Use provided meetLink or generate a new one
     const sessionMeetLink = meetLink || `https://meet.google.com/${Math.random().toString(36).substring(2, 10)}-${Math.random().toString(36).substring(2, 10)}`;
 
-    // Handle comma-separated skill names
-    let skillIds = [];
-    if (skillNames) {
+    // Handle skill associations
+    let finalSkillIds = [];
+    
+    // If skillIds are provided, use them
+    if (skillIds && Array.isArray(skillIds) && skillIds.length > 0) {
+      finalSkillIds = skillIds;
+    } 
+    // If skillNames are provided, find or create skills
+    else if (skillNames) {
       // Split skill names by comma and trim whitespace
       const names = skillNames.split(',').map(name => name.trim()).filter(name => name);
       
       // Find or create skills by name
-      skillIds = await findOrCreateSkills(names, req.user._id);
+      finalSkillIds = await findOrCreateSkills(names, req.user._id);
     }
 
     const session = new Session({
@@ -123,16 +154,17 @@ const createSession = async (req, res) => {
       tutor: req.user._id,
       startTime: new Date(startTime),
       endTime: new Date(endTime),
-      price: price || 10, // Default price if not provided
+      price: 5, // All sessions cost 5 credits
       maxStudents: maxStudents || 10, // Default max students if not provided
       meetLink: sessionMeetLink,
-      skills: skillIds // Add skills array if provided
+      skills: finalSkillIds // Add skills array if provided
     });
 
     const createdSession = await session.save();
     
     // Populate tutor info
     await createdSession.populate('tutor', 'name');
+    await createdSession.populate('skills', 'name category description');
     
     res.status(201).json(createdSession);
   } catch (error) {
@@ -173,6 +205,7 @@ const updateSession = async (req, res) => {
       // Populate tutor info
       await updatedSession.populate('tutor', 'name');
       await updatedSession.populate('students', 'name');
+      await updatedSession.populate('skills', 'name category description');
       
       res.json(updatedSession);
     } else {
@@ -246,6 +279,7 @@ const joinSession = async (req, res) => {
       // Populate data
       await updatedSession.populate('tutor', 'name');
       await updatedSession.populate('students', 'name');
+      await updatedSession.populate('skills', 'name category description');
 
       res.json({
         message: 'Successfully joined session',
@@ -314,6 +348,7 @@ const getSessionsBySkill = async (req, res) => {
 };
 
 module.exports = {
+  getAllSessions,
   getSessions,
   getSessionById,
   getSessionsBySkill,

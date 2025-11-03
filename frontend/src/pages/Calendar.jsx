@@ -24,7 +24,8 @@ const Calendar = () => {
     duration: 60,
     price: 10,
     meetLink: '',
-    skillIds: []
+    skillIds: [],
+    skillNames: '' // For creating new skills
   });
 
   // Initialize WebSocket connection
@@ -76,7 +77,8 @@ const Calendar = () => {
           price: session.price,
           description: session.description,
           status: session.status,
-          meetLink: session.meetLink
+          meetLink: session.meetLink,
+          skills: session.skills || [] // Include skills in session data
         };
       });
       
@@ -246,6 +248,7 @@ const Calendar = () => {
         return;
       }
       
+      // Prepare session data
       const sessionData = {
         title: bookingData.title,
         description: bookingData.description,
@@ -253,9 +256,16 @@ const Calendar = () => {
         endTime: endTime.toISOString(), // This will convert to UTC for storage
         price: parseInt(bookingData.price) || 10,
         maxStudents: 10,
-        meetLink: bookingData.meetLink || undefined,
-        skillIds: bookingData.skillIds.length > 0 ? bookingData.skillIds : undefined // Send skillIds array if available
+        meetLink: bookingData.meetLink || undefined
       };
+      
+      // Add skill information if provided
+      if (bookingData.skillIds.length > 0) {
+        sessionData.skillIds = bookingData.skillIds;
+      } else if (bookingData.skillNames && bookingData.skillNames.trim() !== '') {
+        // If no existing skills selected but new skill names provided, use skillNames
+        sessionData.skillNames = bookingData.skillNames;
+      }
       
       console.log('Sending session data:', sessionData);
       
@@ -283,14 +293,15 @@ const Calendar = () => {
         duration: 60,
         price: 10,
         meetLink: '',
-        skillIds: []
+        skillIds: [],
+        skillNames: ''
       });
 
       // Show success message
-      alert('Session booked successfully!');
+      alert('Session created successfully! It will appear in the Browse Skills section.');
     } catch (err) {
-      console.error('Error booking session:', err);
-      let errorMessage = 'Failed to book session. Please try again.';
+      console.error('Error creating session:', err);
+      let errorMessage = 'Failed to create session. Please try again.';
       
       // Try to get more specific error message
       if (err.response && err.response.data && err.response.data.message) {
@@ -419,16 +430,17 @@ const Calendar = () => {
           {/* Booking Form */}
           {showBookingForm ? (
             <div className="booking-form">
-              <h3>Book New Session</h3>
+              <h3>Create New Session</h3>
               <form onSubmit={handleBookingSubmit}>
                 <div className="form-group">
-                  <label>Title:</label>
+                  <label>What will you teach? (Title):</label>
                   <input
                     type="text"
                     name="title"
                     value={bookingData.title}
                     onChange={handleBookingInputChange}
                     required
+                    placeholder="e.g., Introduction to JavaScript"
                   />
                 </div>
                 
@@ -439,6 +451,7 @@ const Calendar = () => {
                     value={bookingData.description}
                     onChange={handleBookingInputChange}
                     required
+                    placeholder="Describe what you'll cover in this session..."
                   />
                 </div>
                 
@@ -506,13 +519,13 @@ const Calendar = () => {
                 </div>
                 
                 <div className="form-group">
-                  <label>Associated Skills (Optional):</label>
+                  <label>Associate with existing skills (Optional):</label>
                   <select
                     name="skillIds"
                     value={bookingData.skillIds}
                     onChange={handleBookingInputChange}
                     multiple
-                    style={{ height: '150px' }}
+                    style={{ height: '100px' }}
                   >
                     {skills.map((skill) => (
                       <option key={skill._id} value={skill._id}>
@@ -522,13 +535,25 @@ const Calendar = () => {
                   </select>
                   <small>Hold Ctrl (Cmd on Mac) to select multiple skills</small>
                 </div>
+                
+                <div className="form-group">
+                  <label>Or create new skill(s) (comma-separated):</label>
+                  <input
+                    type="text"
+                    name="skillNames"
+                    value={bookingData.skillNames}
+                    onChange={handleBookingInputChange}
+                    placeholder="e.g., JavaScript, React, Node.js"
+                  />
+                  <small>If you select existing skills above, this field will be ignored</small>
+                </div>
 
                 <div className="form-actions">
                   <button type="button" className="btn secondary" onClick={() => setShowBookingForm(false)}>
                     Cancel
                   </button>
                   <button type="submit" className="btn primary">
-                    Book Session
+                    Create Session
                   </button>
                 </div>
               </form>
@@ -575,6 +600,14 @@ const Calendar = () => {
                           <span className="label">📊 Status:</span> 
                           <span className={`status-badge status-${session.status}`}>
                             {session.status}
+                          </span>
+                        </div>
+                      )}
+                      {session.skills && session.skills.length > 0 && (
+                        <div className="session-detail">
+                          <span className="label">📚 Skills:</span> 
+                          <span className="skills-list">
+                            {session.skills.map(skill => skill.name).join(', ')}
                           </span>
                         </div>
                       )}

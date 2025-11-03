@@ -19,9 +19,15 @@ const Messages = () => {
   useEffect(() => {
     const tutorContext = location.state;
     if (tutorContext && tutorContext.tutorId) {
+      // Prevent users from chatting with themselves
+      if (tutorContext.tutorId === user._id) {
+        alert('You cannot chat with yourself!');
+        return;
+      }
+      
       // Create a temporary conversation for chatting with the tutor
       const tempConversation = {
-        id: `temp-${tutorContext.tutorId}-${user._id}`,
+        id: `tutor-${tutorContext.tutorId}-${user._id}`,
         sessionId: null,
         sessionTitle: `Chat with ${tutorContext.tutorName}`,
         instructor: {
@@ -60,36 +66,77 @@ const Messages = () => {
         setLoading(true);
         setError(null);
         
-        const response = await sessionAPI.getAllSessions();
+        // Fetch user's messages to build conversation list
+        const messageResponse = await messageAPI.getUserMessages();
+        const messages = messageResponse.data;
         
-        // Transform session data to conversation format
-        const conversationData = response.data.map(session => ({
-          id: session._id,
-          sessionId: session._id,
-          sessionTitle: session.title,
-          instructor: {
-            id: session.tutor?._id || 'unknown',
-            name: session.tutor?.name || 'Unknown Tutor',
-            avatar: null
-          },
-          lastMessage: session.description || 'Session details',
-          timestamp: new Date(session.updatedAt || session.createdAt || Date.now()),
-          unread: 0,
-          type: 'session',
-          startTime: session.startTime,
-          endTime: session.endTime,
-          status: session.status
-        }));
+        // Get unique conversation partners
+        const conversationPartners = new Map();
         
-        setConversations(prev => {
-          // Merge with existing tutor conversations
-          const tutorConvs = prev.filter(conv => conv.type === 'tutor');
-          return [...tutorConvs, ...conversationData];
+        messages.forEach(message => {
+          // Determine the other user in the conversation
+          let otherUserId, otherUserName;
+          
+          if (message.sender._id === user._id) {
+            // Current user is sender, so recipient is the other user
+            if (message.recipient) {
+              otherUserId = message.recipient._id;
+              otherUserName = message.recipient.name;
+            }
+          } else {
+            // Current user is recipient, so sender is the other user
+            otherUserId = message.sender._id;
+            otherUserName = message.sender.name;
+          }
+          
+          // Skip if no other user or if it's the current user (prevent chatting with yourself)
+          if (!otherUserId || otherUserId === user._id) {
+            return;
+          }
+          
+          // Create/update conversation with this user using consistent ID format
+          const userIds = [user._id, otherUserId].sort();
+          const conversationId = `conv-${userIds[0]}-${userIds[1]}`;
+          
+          if (!conversationPartners.has(conversationId)) {
+            conversationPartners.set(conversationId, {
+              id: conversationId,
+              sessionId: null,
+              sessionTitle: `Chat with ${otherUserName}`,
+              instructor: {
+                id: otherUserId,
+                name: otherUserName,
+                avatar: null
+              },
+              lastMessage: message.content,
+              timestamp: message.createdAt,
+              unread: 0,
+              type: 'tutor'
+            });
+          } else {
+            // Update with latest message if this one is newer
+            const existing = conversationPartners.get(conversationId);
+            if (new Date(message.createdAt) > new Date(existing.timestamp)) {
+              existing.lastMessage = message.content;
+              existing.timestamp = message.createdAt;
+            }
+          }
         });
         
+        // Convert map to array and sort by timestamp
+        const allConversations = Array.from(conversationPartners.values())
+          .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        
+        setConversations(allConversations);
+        
         // If no conversation is selected and we have conversations, select the first one
-        if (!selectedConversation && conversationData.length > 0 && !location.state) {
-          setSelectedConversation(conversationData[0]);
+        if (!selectedConversation && allConversations.length > 0 && !location.state) {
+          setSelectedConversation(allConversations[0]);
+        }
+        
+        // If we have tutor context but no conversations yet, keep the temp conversation
+        if (location.state && !selectedConversation) {
+          // The tutor context useEffect will handle this
         }
       } catch (err) {
         console.error('Error fetching conversations:', err);
@@ -99,8 +146,10 @@ const Messages = () => {
       }
     };
 
-    fetchConversations();
-  }, [location.state]);
+    if (user) {
+      fetchConversations();
+    }
+  }, [location.state, user, selectedConversation]);
 
   const formatTime = (timestamp) => {
     const now = new Date();
@@ -145,6 +194,21 @@ const Messages = () => {
 
   const handleConversationSelect = (conversation) => {
     setSelectedConversation(conversation);
+  };
+
+  const handleDeleteConversation = (conversationId, e) => {
+    e.stopPropagation(); // Prevent the conversation from being selected
+    
+    // Filter out the conversation to delete
+    setConversations(prevConversations => 
+      prevConversations.filter(conv => conv.id !== conversationId)
+    );
+    
+    // If the deleted conversation was selected, select another one or null
+    if (selectedConversation && selectedConversation.id === conversationId) {
+      const remainingConversations = conversations.filter(conv => conv.id !== conversationId);
+      setSelectedConversation(remainingConversations.length > 0 ? remainingConversations[0] : null);
+    }
   };
 
   const getStatusClass = (status) => {
@@ -225,18 +289,15 @@ const Messages = () => {
                     <p className="conversation-instructor">with {conversation.instructor.name}</p>
                     <p className="conversation-preview">{conversation.lastMessage}</p>
                   </div>
-                  
-                  {conversation.startTime && conversation.endTime && (
-                    <div className="session-details">
-                      <span className={`session-status ${getStatusClass(conversation.status)}`}>
-                        {getStatusText(conversation.status)}
-                      </span>
-                      <span className="session-time">
-                        {formatSessionTime(conversation.startTime, conversation.endTime)}
-                      </span>
-                    </div>
-                  )}
                 </div>
+                
+                <button 
+                  className="delete-conversation-btn"
+                  onClick={(e) => handleDeleteConversation(conversation.id, e)}
+                  aria-label="Delete conversation"
+                >
+                  🗑️
+                </button>
                 
                 {conversation.unread > 0 && (
                   <div className="unread-badge">{conversation.unread}</div>

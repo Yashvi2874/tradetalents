@@ -4,7 +4,8 @@ const {
   getMessagesBySession,
   createMessage,
   getUserMessages,
-  getMessagesWithTutor
+  getMessagesWithTutor,
+  getConversationWithUser
 } = require('../controllers/messageController');
 const auth = require('../middleware/auth');
 
@@ -17,5 +18,8 @@ router.route('/session/:sessionId')
 
 router.route('/tutor/:tutorId')
   .get(auth, getMessagesWithTutor);
+
+router.route('/conversation/:userId')
+  .get(auth, getConversationWithUser);
 
 module.exports = router;
