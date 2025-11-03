@@ -186,10 +186,20 @@ io.on('connection', (socket) => {
     // Load previous messages from database for this session
     try {
       console.log(`Loading previous messages for session: ${sessionId}`);
-      const messages = await Message.find({ session: sessionId })
-        .populate('sender', 'name')
-        .sort({ createdAt: 1 })
-        .limit(50); // Limit to last 50 messages
+      
+      // For tutor chats (roomId starts with 'tutor-'), we need to handle differently
+      let messages = [];
+      if (sessionId.startsWith('tutor-')) {
+        // For tutor chats, we might want to load messages differently
+        // For now, we'll use the same approach but note this is a tutor chat
+        console.log('This is a tutor chat room');
+      } else {
+        // Regular session chat
+        messages = await Message.find({ session: sessionId })
+          .populate('sender', 'name')
+          .sort({ createdAt: 1 })
+          .limit(50); // Limit to last 50 messages
+      }
       
       console.log(`Found ${messages.length} previous messages`);
       
@@ -253,7 +263,7 @@ io.on('connection', (socket) => {
       
       // Save message to database
       const message = new Message({
-        session: sessionId,
+        session: sessionId.startsWith('tutor-') ? null : sessionId, // Set to null for tutor chats
         sender: userId,
         content: content,
         isTutor: false // This would need to be determined based on user role in a real app

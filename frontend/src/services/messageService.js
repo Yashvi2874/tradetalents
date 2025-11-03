@@ -10,6 +10,9 @@ export const messageAPI = {
   
   // Create a new message
   createMessage: (data) => api.post('/messages', data),
+  
+  // Get messages between user and tutor
+  getMessagesWithTutor: (tutorId) => api.get(`/messages/tutor/${tutorId}`),
 };
 
 export default messageAPI;

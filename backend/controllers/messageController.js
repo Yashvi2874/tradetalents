@@ -1,5 +1,6 @@
 const Message = require('../models/Message');
 const User = require('../models/User');
+const Session = require('../models/Session');
 
 // @desc    Get messages for a session
 // @route   GET /api/messages/session/:sessionId
@@ -29,8 +30,15 @@ const createMessage = async (req, res) => {
   try {
     const { session, content } = req.body;
     
+    // Validate required fields
+    if (!content) {
+      return res.status(400).json({ message: 'Message content is required' });
+    }
+    
+    // If no session is provided, this might be a tutor chat
+    // We'll still create the message but link it to a session or use a special identifier
     const message = new Message({
-      session,
+      session: session || null, // Allow null for tutor chats
       sender: req.user._id,
       content,
       isTutor: req.user.role === 'tutor' // Set isTutor based on user role
@@ -71,8 +79,34 @@ const getUserMessages = async (req, res) => {
   }
 };
 
+// @desc    Get messages between user and tutor (for tutor chat functionality)
+// @route   GET /api/messages/tutor/:tutorId
+// @access  Private
+const getMessagesWithTutor = async (req, res) => {
+  try {
+    const { tutorId } = req.params;
+    const userId = req.user._id;
+    
+    // Get messages between the current user and the tutor
+    // This is a simplified approach - in a real app you'd want to organize this better
+    const messages = await Message.find({
+      $or: [
+        { sender: userId, session: null }, // User's messages to tutor
+        { sender: tutorId, session: null }  // Tutor's messages to user
+      ]
+    })
+    .populate('sender', 'name')
+    .sort({ createdAt: 1 });
+    
+    res.json(messages);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getMessagesBySession,
   createMessage,
-  getUserMessages
+  getUserMessages,
+  getMessagesWithTutor
 };

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
+import { messageAPI } from '../services/messageService';
 import Chatbot from './Chatbot';
 import './Chat.css';
 
@@ -139,12 +140,32 @@ const Chat = ({
     };
   }, [newMessage, sessionId, tutorId, user, isChatbotMode]);
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
     if (newMessage.trim() === '') return;
 
-    // Emit the message to the server
-    const roomId = sessionId || `tutor-${tutorId}-${user?._id}`;
+    // For tutor chat (not tied to a session), we need to create a temporary session
+    // or handle messages differently
+    if (!sessionId && tutorId) {
+      // This is a tutor chat, not tied to a specific session
+      // We'll emit the message via socket
+      const roomId = `tutor-${tutorId}-${user?._id}`;
+      
+      // Emit the message to the server
+      socketRef.current?.emit('send-message', {
+        sessionId: roomId,
+        userId: user?._id,
+        userName: user?.name || 'Anonymous',
+        content: newMessage
+      });
+      
+      // Clear the input
+      setNewMessage('');
+      return;
+    }
+
+    // For session-based chats, emit the message via socket
+    const roomId = sessionId;
     
     socketRef.current?.emit('send-message', {
       sessionId: roomId,

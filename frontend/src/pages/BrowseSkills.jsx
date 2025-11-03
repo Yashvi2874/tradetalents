@@ -96,7 +96,7 @@ const BrowseSkills = () => {
         endTime: new Date(Date.now() + 86400000 + 3600000), // 1 hour session
         price: skill.price,
         maxStudents: 10,
-        skillId: skill._id
+        skills: [skill._id] // Use skills array instead of skillId
       };
       
       const response = await sessionAPI.createSession(sessionData);
