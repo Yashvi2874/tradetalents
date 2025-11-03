@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { sessionAPI } from '../services/sessionService';
+import { skillAPI } from '../services/skillService';
 import io from 'socket.io-client';
 import { motion } from 'framer-motion';
 import './Calendar.css';
@@ -10,6 +11,7 @@ const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [sessions, setSessions] = useState([]);
+  const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [socket, setSocket] = useState(null);
@@ -17,10 +19,12 @@ const Calendar = () => {
   const [bookingData, setBookingData] = useState({
     title: '',
     description: '',
-    date: '',
+    date: '', // Will be set when booking form is opened
     time: '',
     duration: 60,
-    price: 10
+    price: 10,
+    meetLink: '',
+    skillIds: []
   });
 
   // Initialize WebSocket connection
@@ -52,18 +56,29 @@ const Calendar = () => {
       
       const response = await sessionAPI.getAllSessions();
       
-      // Transform session data to match calendar format
-      const calendarSessions = response.data.map(session => ({
-        id: session._id,
-        title: session.title,
-        tutor: session.tutor?.name || 'Unknown Tutor',
-        date: new Date(session.startTime).toISOString().split('T')[0],
-        time: new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        duration: Math.round((new Date(session.endTime) - new Date(session.startTime)) / (1000 * 60)), // in minutes
-        price: session.price,
-        description: session.description,
-        status: session.status
-      }));
+      // Transform session data to match calendar format with proper timezone handling
+      const calendarSessions = response.data.map(session => {
+        const startDate = new Date(session.startTime);
+        const endDate = new Date(session.endTime);
+        
+        // Use local date instead of UTC to match the user's timezone
+        const localDateStr = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000)
+          .toISOString()
+          .split('T')[0];
+        
+        return {
+          id: session._id,
+          title: session.title,
+          tutor: session.tutor?.name || 'Unknown Tutor',
+          date: localDateStr, // Use local date for consistency
+          time: startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          duration: Math.round((endDate - startDate) / (1000 * 60)), // in minutes
+          price: session.price,
+          description: session.description,
+          status: session.status,
+          meetLink: session.meetLink
+        };
+      });
       
       setSessions(calendarSessions);
     } catch (err) {
@@ -76,6 +91,20 @@ const Calendar = () => {
 
   useEffect(() => {
     fetchSessions();
+  }, []);
+
+  // Fetch skills for the dropdown
+  useEffect(() => {
+    const fetchSkills = async () => {
+      try {
+        const response = await skillAPI.getAllSkills();
+        setSkills(response.data);
+      } catch (err) {
+        console.error('Error fetching skills:', err);
+      }
+    };
+
+    fetchSkills();
   }, []);
 
   const monthNames = [
@@ -94,7 +123,10 @@ const Calendar = () => {
   };
 
   const formatDateForComparison = (date) => {
-    return date.toISOString().split('T')[0];
+    // Use local date for consistency in comparisons
+    return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+      .toISOString()
+      .split('T')[0];
   };
 
   const getSessionsForDate = (date) => {
@@ -117,6 +149,7 @@ const Calendar = () => {
   };
 
   const handleDateClick = (day) => {
+    // Create date in local timezone but ensure consistent handling
     const clickedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
     setSelectedDate(clickedDate);
   };
@@ -170,11 +203,24 @@ const Calendar = () => {
 
   // Handle booking form input changes
   const handleBookingInputChange = (e) => {
-    const { name, value } = e.target;
-    setBookingData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    const { name, value, options, multiple } = e.target;
+    
+    if (name === 'skillIds' && multiple) {
+      // Handle multiple skill selection
+      const selectedSkillIds = Array.from(options)
+        .filter(option => option.selected)
+        .map(option => option.value);
+      
+      setBookingData(prev => ({
+        ...prev,
+        skillIds: selectedSkillIds
+      }));
+    } else {
+      setBookingData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   // Handle booking form submission
@@ -182,8 +228,10 @@ const Calendar = () => {
     e.preventDefault();
     
     try {
-      // Combine date and time for startTime
-      const startTime = new Date(`${bookingData.date}T${bookingData.time}`);
+      // Combine date and time for startTime using local timezone
+      const [year, month, day] = bookingData.date.split('-').map(Number);
+      const [hours, minutes] = bookingData.time.split(':').map(Number);
+      const startTime = new Date(year, month - 1, day, hours, minutes); // month is 0-indexed
       const endTime = new Date(startTime.getTime() + bookingData.duration * 60000); // Add duration in milliseconds
       
       // Validate that we have all required data
@@ -201,10 +249,12 @@ const Calendar = () => {
       const sessionData = {
         title: bookingData.title,
         description: bookingData.description,
-        startTime: startTime.toISOString(),
-        endTime: endTime.toISOString(),
+        startTime: startTime.toISOString(), // This will convert to UTC for storage
+        endTime: endTime.toISOString(), // This will convert to UTC for storage
         price: parseInt(bookingData.price) || 10,
-        maxStudents: 10
+        maxStudents: 10,
+        meetLink: bookingData.meetLink || undefined,
+        skillIds: bookingData.skillIds.length > 0 ? bookingData.skillIds : undefined // Send skillIds array if available
       };
       
       console.log('Sending session data:', sessionData);
@@ -231,9 +281,11 @@ const Calendar = () => {
         date: '',
         time: '',
         duration: 60,
-        price: 10
+        price: 10,
+        meetLink: '',
+        skillIds: []
       });
-      
+
       // Show success message
       alert('Session booked successfully!');
     } catch (err) {
@@ -253,11 +305,14 @@ const Calendar = () => {
 
   // Handle book session button click
   const handleBookSessionClick = () => {
-    // Pre-fill the date with the selected date
-    const formattedDate = formatDateForComparison(selectedDate);
+    // Pre-fill the date with the selected date in YYYY-MM-DD format using local timezone
+    const localDateStr = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000)
+      .toISOString()
+      .split('T')[0];
+    
     setBookingData(prev => ({
       ...prev,
-      date: formattedDate
+      date: localDateStr
     }));
     setShowBookingForm(true);
   };
@@ -439,6 +494,35 @@ const Calendar = () => {
                   </div>
                 </div>
                 
+                <div className="form-group">
+                  <label>Meeting Link (Optional):</label>
+                  <input
+                    type="text"
+                    name="meetLink"
+                    value={bookingData.meetLink}
+                    onChange={handleBookingInputChange}
+                    placeholder="https://meet.google.com/xxx-xxxx-xxx"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>Associated Skills (Optional):</label>
+                  <select
+                    name="skillIds"
+                    value={bookingData.skillIds}
+                    onChange={handleBookingInputChange}
+                    multiple
+                    style={{ height: '150px' }}
+                  >
+                    {skills.map((skill) => (
+                      <option key={skill._id} value={skill._id}>
+                        {skill.name} - {skill.tutor?.name || 'Unknown Tutor'}
+                      </option>
+                    ))}
+                  </select>
+                  <small>Hold Ctrl (Cmd on Mac) to select multiple skills</small>
+                </div>
+
                 <div className="form-actions">
                   <button type="button" className="btn secondary" onClick={() => setShowBookingForm(false)}>
                     Cancel
@@ -499,15 +583,27 @@ const Calendar = () => {
                       {session.description}
                     </div>
                     <div className="session-actions">
-                      <motion.button 
-                        className="btn primary"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => alert('Join session functionality would go here')}
-                      >
-                        Join Session
-                      </motion.button>
+                      {session.meetLink ? (
+                        <motion.button 
+                          className="btn join-session"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => window.open(session.meetLink, '_blank')}
+                        >
+                          Join Session
+                        </motion.button>
+                      ) : (
+                        <motion.button 
+                          className="btn join-session"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => alert('Meeting link will be available soon')}
+                        >
+                          Join Session
+                        </motion.button>
+                      )}
                     </div>
+
                   </motion.div>
                 ))
               ) : (

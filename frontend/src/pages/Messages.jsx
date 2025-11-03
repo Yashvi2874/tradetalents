@@ -61,7 +61,7 @@ const Messages = () => {
             name: session.tutor?.name || 'Unknown Tutor',
             avatar: null
           },
-          lastMessage: 'Session details updated',
+          lastMessage: session.description || 'Session details',
           timestamp: new Date(session.updatedAt || session.createdAt || Date.now()),
           unread: 0,
           type: 'session',
@@ -73,7 +73,7 @@ const Messages = () => {
         setConversations(conversationData);
         
         // If no conversation is selected and we have conversations, select the first one
-        if (!selectedConversation && conversationData.length > 0) {
+        if (!selectedConversation && conversationData.length > 0 && !location.state) {
           setSelectedConversation(conversationData[0]);
         }
       } catch (err) {
@@ -85,7 +85,7 @@ const Messages = () => {
     };
 
     fetchConversations();
-  }, []);
+  }, [location.state]);
 
   const formatTime = (timestamp) => {
     const now = new Date();
@@ -105,6 +105,8 @@ const Messages = () => {
 
   // Format session time for display
   const formatSessionTime = (startTime, endTime) => {
+    if (!startTime || !endTime) return '';
+    
     const start = new Date(startTime);
     const end = new Date(endTime);
     
@@ -209,14 +211,16 @@ const Messages = () => {
                     <p className="conversation-preview">{conversation.lastMessage}</p>
                   </div>
                   
-                  <div className="session-details">
-                    <span className={`session-status ${getStatusClass(conversation.status)}`}>
-                      {getStatusText(conversation.status)}
-                    </span>
-                    <span className="session-time">
-                      {formatSessionTime(conversation.startTime, conversation.endTime)}
-                    </span>
-                  </div>
+                  {conversation.startTime && conversation.endTime && (
+                    <div className="session-details">
+                      <span className={`session-status ${getStatusClass(conversation.status)}`}>
+                        {getStatusText(conversation.status)}
+                      </span>
+                      <span className="session-time">
+                        {formatSessionTime(conversation.startTime, conversation.endTime)}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 
                 {conversation.unread > 0 && (
@@ -237,6 +241,7 @@ const Messages = () => {
               tutorId={selectedConversation.instructor.id}
               tutorName={selectedConversation.instructor.name}
               skillContext={selectedConversation.skillContext}
+              user={user}
             />
           ) : (
             <div className="no-conversation-selected">

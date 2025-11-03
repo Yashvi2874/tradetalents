@@ -248,6 +248,11 @@ const BrowseSkills = () => {
                 <div className="skill-meta">
                   <div className="skill-tutor">by {skill.tutor?.name || 'Unknown Tutor'}</div>
                   <div className="skill-category">{skill.category}</div>
+                  {skill.upcomingSessions !== undefined && (
+                    <div className="skill-sessions">
+                      <span className="session-count">{skill.upcomingSessions} upcoming sessions</span>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="skill-rating">

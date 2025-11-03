@@ -3,6 +3,7 @@ const router = express.Router();
 const { 
   getSessions,
   getSessionById,
+  getSessionsBySkill,
   createSession,
   updateSession,
   deleteSession,
@@ -13,6 +14,9 @@ const auth = require('../middleware/auth');
 router.route('/')
   .get(auth, getSessions)
   .post(auth, createSession);
+
+router.route('/skill/:skillId')
+  .get(getSessionsBySkill);
 
 router.route('/:id')
   .get(auth, getSessionById)

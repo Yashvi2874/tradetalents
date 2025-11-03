@@ -15,6 +15,7 @@ const AddSkillForm = ({ onSkillAdded }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const categories = [
     'Programming', 'Data Science', 'Design', 'Business', 
@@ -35,6 +36,7 @@ const AddSkillForm = ({ onSkillAdded }) => {
     setLoading(true);
     setError(null);
     setSuccess(false);
+    setSuccessMessage('');
 
     try {
       // Prepare data for submission
@@ -47,6 +49,12 @@ const AddSkillForm = ({ onSkillAdded }) => {
       const response = await skillAPI.createSkill(skillData);
       
       setSuccess(true);
+      if (Array.isArray(response.data)) {
+        setSuccessMessage(`Successfully created ${response.data.length} skills!`);
+      } else {
+        setSuccessMessage('Skill created successfully!');
+      }
+      
       setFormData({
         name: '',
         category: '',
@@ -58,7 +66,14 @@ const AddSkillForm = ({ onSkillAdded }) => {
       
       // Notify parent component
       if (onSkillAdded) {
-        onSkillAdded(response.data);
+        // Handle both single skill and multiple skills response
+        if (Array.isArray(response.data)) {
+          // Multiple skills created
+          response.data.forEach(skill => onSkillAdded(skill));
+        } else {
+          // Single skill created
+          onSkillAdded(response.data);
+        }
       }
     } catch (err) {
       console.error('Error creating skill:', err);
@@ -79,7 +94,7 @@ const AddSkillForm = ({ onSkillAdded }) => {
       
       {success && (
         <div className="success-message">
-          Skill created successfully!
+          {successMessage}
         </div>
       )}
       
@@ -88,10 +103,10 @@ const AddSkillForm = ({ onSkillAdded }) => {
           {error}
         </div>
       )}
-      
+
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="name">Skill Name *</label>
+          <label htmlFor="name">Skill Name(s) * (Separate multiple skills with commas)</label>
           <input
             type="text"
             id="name"
@@ -99,7 +114,7 @@ const AddSkillForm = ({ onSkillAdded }) => {
             value={formData.name}
             onChange={handleChange}
             required
-            placeholder="Enter skill name"
+            placeholder="e.g., JavaScript, React, Node.js"
           />
         </div>
         

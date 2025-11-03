@@ -173,6 +173,29 @@ const SkillDetails = () => {
               </div>
             </div>
 
+            {/* Upcoming Sessions Section */}
+            {skill?.upcomingSessions && skill.upcomingSessions.length > 0 && (
+              <div className="upcoming-sessions">
+                <h3>Upcoming Sessions</h3>
+                <div className="sessions-list">
+                  {skill.upcomingSessions.map((session) => (
+                    <div key={session._id} className="session-item">
+                      <div className="session-info">
+                        <div className="session-date">
+                          {new Date(session.startTime).toLocaleDateString()}
+                        </div>
+                        <div className="session-time">
+                          {new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - 
+                          {new Date(session.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
+                      <div className="session-price">{session.price} credits</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="skill-actions">
               <button 
                 className="btn btn-primary"

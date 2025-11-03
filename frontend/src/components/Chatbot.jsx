@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { chatbotAPI } from '../services/chatbotService';
-import './Chat.css';
+import './Chatbot.css';
 
 const Chatbot = ({ user, skillContext }) => {
   const [messages, setMessages] = useState([
@@ -91,40 +91,33 @@ const Chatbot = ({ user, skillContext }) => {
   };
 
   return (
-    <div className="chat-container">
-      <div className="chat-header">
-        <div className="chat-title">
-          <h3>Skillbot Assistant</h3>
-          <p>Your AI learning companion</p>
-        </div>
-      </div>
-      
-      <div className="chat-messages">
+    <div className="chatbot-container">
+      <div className="chatbot-messages">
         {messages.map((message) => (
           <div 
             key={message.id} 
-            className={`message ${message.userId === user?._id ? 'sent' : 'received'} ${message.system ? 'system' : ''}`}
+            className={`chatbot-message ${message.userId === user?._id ? 'sent' : 'received'} ${message.system ? 'system' : ''}`}
           >
             {!message.system && (
-              <div className="message-sender">
-                {message.userName} {message.isTutor && <span className="tutor-badge">Assistant</span>}
+              <div className="chatbot-message-sender">
+                {message.userName} {message.isTutor && <span className="chatbot-tutor-badge">Assistant</span>}
               </div>
             )}
-            <div className="message-content">
+            <div className="chatbot-message-content">
               {message.content}
             </div>
-            <div className="message-time">
+            <div className="chatbot-message-time">
               {formatTime(message.timestamp)}
             </div>
           </div>
         ))}
         {isLoading && (
-          <div className="message received">
-            <div className="message-sender">
-              SkillBot <span className="tutor-badge">Assistant</span>
+          <div className="chatbot-message received">
+            <div className="chatbot-message-sender">
+              SkillBot <span className="chatbot-tutor-badge">Assistant</span>
             </div>
-            <div className="message-content">
-              <div className="typing-indicator">
+            <div className="chatbot-message-content">
+              <div className="chatbot-typing-indicator">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -135,18 +128,18 @@ const Chatbot = ({ user, skillContext }) => {
         <div ref={messagesEndRef} />
       </div>
       
-      <form className="chat-input" onSubmit={handleSendMessage}>
+      <form className="chatbot-input" onSubmit={handleSendMessage}>
         <input
           type="text"
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Ask me anything about learning..."
-          className="message-input"
+          className="chatbot-message-input"
           disabled={isLoading}
         />
         <button 
           type="submit" 
-          className="send-button"
+          className="chatbot-send-button"
           disabled={isLoading || newMessage.trim() === ''}
         >
           {isLoading ? 'Thinking...' : 'Send'}

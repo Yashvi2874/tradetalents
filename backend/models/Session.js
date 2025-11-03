@@ -40,7 +40,15 @@ const sessionSchema = new mongoose.Schema({
     type: String,
     enum: ['upcoming', 'ongoing', 'completed', 'cancelled'],
     default: 'upcoming'
-  }
+  },
+  meetLink: {
+    type: String,
+    default: null
+  },
+  skills: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Skill'
+  }]
 }, {
   timestamps: true
 });
