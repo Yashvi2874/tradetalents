@@ -1,51 +1,92 @@
 # TradeTalents
 
-TradeTalents is a skill exchange platform that connects learners and teachers. Users can share their skills, learn new ones, and build a community around knowledge sharing.
+TradeTalents is a comprehensive skill exchange platform built with the MERN stack that connects learners and teachers worldwide. Users can share their expertise, learn new skills, and build a vibrant community around knowledge sharing using a credit-based system.
 
-## Features
+## 🌟 Key Features
 
-- **User Authentication**: Secure login and registration system
-- **Skill Browsing**: Discover and search for skills to learn or teach
-- **Real-time Messaging**: Chat with other users using Socket.IO
-- **Session Booking**: Schedule and manage learning sessions
-- **Credit System**: Earn and spend credits for sessions
-- **AI Chatbot**: Gemini-powered assistant for learning support
-- **Responsive Design**: Works on desktop and mobile devices
+### 🔐 User Authentication
+- Secure registration and login system with JWT tokens
+- Password encryption using bcrypt
+- Protected routes for authenticated users only
 
-## Prerequisites
+### 🎯 Skill Management
+- Browse and search skills across various categories
+- Add your own skills to teach others
+- Detailed skill profiles with descriptions and ratings
 
-- Node.js (v14 or higher)
+### 💬 Real-time Communication
+- Instant messaging with Socket.IO
+- Private chat between users
+- Session-specific group chats
+- Online status indicators and typing notifications
+
+### 📅 Session Booking
+- Schedule one-on-one learning sessions
+- Interactive calendar for session management
+- Real-time session updates and notifications
+- Credit-based transaction system
+
+### 🤖 AI-Powered Assistant
+- Talon - Your personal learning assistant powered by Google Gemini
+- Context-aware responses for learning support
+- Dedicated skill assistant for subject-specific help
+- Available throughout the platform for instant assistance
+
+### 📱 Responsive Design
+- Fully responsive UI that works on desktop and mobile devices
+- Adaptive layouts for optimal viewing experience
+- Touch-friendly interface for mobile users
+
+## 🖼️ Screenshots
+
+### Dashboard
+![Dashboard](images/dashboard.png)
+
+### Skill Browsing
+![Browse Skills](images/browse-skills.png)
+
+### Real-time Chat
+![Chat Interface](images/chat.png)
+
+## 🛠️ Technology Stack
+
+- **Frontend**: React 18, Vite, TailwindCSS, Framer Motion
+- **Backend**: Node.js, Express.js 5.x
+- **Database**: MongoDB with Mongoose ODM
+- **Real-time**: Socket.IO for instant messaging
+- **AI Integration**: Google Gemini API
+- **Authentication**: JWT with bcrypt encryption
+- **Deployment**: Render hosting platform
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js (v16 or higher)
 - MongoDB Atlas account
-- Google Gemini API key (for chatbot feature)
+- Google Gemini API key
 
-## Environment Variables
+### Environment Setup
 
-### Frontend (.env)
-Create a `.env` file in the frontend directory:
-```
+#### Frontend Configuration
+Create `frontend/.env`:
+```env
 VITE_API_URL=http://localhost:5000/api
 VITE_BACKEND_URL=http://localhost:5000
 ```
 
-### Backend (.env)
-Create a `.env` file in the backend directory:
-```
+#### Backend Configuration
+Create `backend/.env`:
+```env
 NODE_ENV=development
 PORT=5000
 MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret_key
+JWT_SECRET=your_secure_jwt_secret
 FRONTEND_URL=http://localhost:5173
-GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_API_KEY=your_google_gemini_api_key
 ```
 
-### Getting a Gemini API Key
-
-1. Go to [Google AI Studio](https://aistudio.google.com/)
-2. Sign in with your Google account
-3. Create a new API key
-4. Copy the API key and add it to your backend `.env` file
-
-## Installation
+### Installation
 
 1. Clone the repository:
 ```bash
@@ -53,130 +94,68 @@ git clone https://github.com/your-username/trade-talents.git
 cd trade-talents
 ```
 
-2. Install dependencies:
+2. Install all dependencies:
 ```bash
 npm run install-all
 ```
 
-## Running the Application
+### Development Setup
 
-### Development Mode
+Start both frontend and backend servers concurrently:
+```bash
+npm run dev
+```
 
-1. Start the backend server:
+Or start each service separately:
+
+**Backend:**
 ```bash
 cd backend
 npm run dev
 ```
 
-2. Start the frontend development server:
+**Frontend:**
 ```bash
 cd frontend
 npm run dev
 ```
 
-### Production Mode
+### Production Deployment
 
 1. Build the frontend:
 ```bash
-cd frontend
 npm run build
 ```
 
 2. Start the backend server:
 ```bash
-cd backend
 npm start
 ```
 
-3. Serve the frontend build (using a static server or through the backend)
-
-## Deployment
-
-The application is configured for deployment on Render. The `render.yaml` file contains the deployment configuration.
-
-### Environment Variables for Production
-
-Make sure to set the following environment variables in your Render dashboard:
-
-**Frontend:**
-- VITE_API_URL=https://your-backend-url.onrender.com/api
-- VITE_BACKEND_URL=https://your-backend-url.onrender.com
-
-**Backend:**
-- NODE_ENV=production
-- PORT=5000
-- MONGODB_URI=your_production_mongodb_connection_string
-- JWT_SECRET=your_production_jwt_secret
-- FRONTEND_URL=https://your-frontend-url.onrender.com
-- GEMINI_API_KEY=your_production_gemini_api_key
-
-## Project Structure
+## 🏗️ Project Architecture
 
 ```
 TradeTalents/
 ├── frontend/
 │   ├── src/
-│   │   ├── components/
-│   │   ├── contexts/
-│   │   ├── pages/
-│   │   ├── services/
-│   │   └── utils/
+│   │   ├── components/     # Reusable UI components
+│   │   ├── contexts/       # React context providers
+│   │   ├── pages/          # Page-level components
+│   │   ├── services/       # API service calls
+│   │   └── utils/          # Helper functions
 │   └── ...
 ├── backend/
-│   ├── controllers/
-│   ├── models/
-│   ├── routes/
-│   ├── middleware/
-│   └── config/
+│   ├── controllers/        # Request handlers
+│   ├── models/             # Database schemas
+│   ├── routes/             # API endpoints
+│   ├── middleware/         # Custom middleware
+│   └── config/             # Configuration files
 └── ...
 ```
 
-## Key Features Implementation
+## 🤝 Contributing
 
-### Real-time Messaging
-- Implemented using Socket.IO
-- Supports private messaging between users
-- Typing indicators and online status
-- Persistent message storage in MongoDB
-
-### Session Booking
-- Users can book sessions for skills
-- Calendar integration for scheduling
-- Real-time updates when sessions are booked
-
-### Skill Exchange
-- Users can browse and search skills
-- Credit-based system for transactions
-- Skill details and tutor information
-
-### AI Chatbot
-- Powered by Google Gemini API
-- Available as a toggle in chat sessions
-- Dedicated chatbot page for general assistance
-- Context-aware responses based on skills
-
-## Troubleshooting
-
-### MongoDB Connection Issues
-1. Ensure your IP address is whitelisted in MongoDB Atlas
-2. Check your connection string format
-3. Verify your MongoDB credentials
-
-### CORS Issues
-1. Check the FRONTEND_URL environment variable
-2. Ensure the allowed origins are correctly configured in the backend
-
-### Authentication Issues
-1. Verify JWT_SECRET is set correctly
-2. Check token expiration settings
-3. Ensure proper token handling in frontend
-
-### Chatbot Issues
-1. Verify GEMINI_API_KEY is set correctly
-2. Check that the @google/generative-ai package is installed
-3. Ensure you have a stable internet connection
-
-## Contributing
+We welcome contributions to improve TradeTalents! To contribute:
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
@@ -184,10 +163,15 @@ TradeTalents/
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a pull request
 
-## License
+## 👥 Creators
 
-This project is licensed under the MIT License.
+TradeTalents was developed by:
+- Siddhant Shukla
+- Yashasvi Gupta
+- Subhpreet Kaur
 
-## Contact
+From KJ Somaiya School of Engineering
 
-For support or questions, please open an issue in the repository.
+---
+
+*Empowering learners and teachers worldwide through knowledge exchange*
